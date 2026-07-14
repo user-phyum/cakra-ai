@@ -7,14 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Mengimpor PDF.js untuk ekstraksi teks dari PDF langsung di browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom scrollbar untuk tampilan premium */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -30,7 +28,6 @@
             background: rgba(148, 163, 184, 1);
         }
 
-        /* Equalizer Animation for TTS Read Aloud */
         .eq-bar {
             display: inline-block;
             width: 3px;
@@ -50,9 +47,10 @@
 
     <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center z-30 relative shrink-0 shadow-sm">
         <div class="flex items-center space-x-3">
-            <!-- Menampilkan Logo Baru dari Tautan yang Diberikan dan Mengarahkannya ke Website UM -->
+            <!-- Tautan Logo UM Resmi yang mengarah ke um.ac.id -->
             <a href="https://um.ac.id/" target="_blank" rel="noopener noreferrer" class="shrink-0 flex items-center justify-center">
-                <img src="https://um.ac.id/wp-content/uploads/2019/03/Lambang-UM.png" class="h-11 w-11 object-contain transition-all hover:scale-105" alt="Logo Cakra-Ai" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0d9488/ffffff?text=CA'">
+                <!-- referrerpolicy="no-referrer" disematkan untuk mematikan pelacakan asal domain sehingga gambar tidak terkena pemblokiran CORS/Hotlink protection dari server UM -->
+                <img src="https://upload.wikimedia.org/wikipedia/id/thumb/7/73/Lambang_Universitas_Negeri_Malang.jpg/1280px-Lambang_Universitas_Negeri_Malang.jpg?_=20171123143359" referrerpolicy="no-referrer" class="h-11 w-11 object-contain rounded-full transition-all hover:scale-105" alt="Logo Cakra-Ai" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0d9488/ffffff?text=UM'">
             </a>
             <div>
                 <h1 class="font-bold text-lg text-slate-900 leading-none">Cakra-Ai <span class="text-teal-600 font-semibold text-sm px-1.5 py-0.5 bg-teal-50 rounded">Lite</span></h1>
@@ -60,8 +58,15 @@
             </div>
         </div>
         
-        <!-- API Key & Settings Panel -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2">
+            <button onclick="downloadEntireChat()" class="flex items-center space-x-2 px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 hover:text-teal-800 text-sm font-medium rounded-lg transition-all" title="Unduh Seluruh Sesi Obrolan (.doc)">
+                <i class="fa-solid fa-file-export"></i>
+                <span class="hidden md:inline">Unduh Diskusi (.doc)</span>
+            </button>
+            <button onclick="clearChatHistory()" class="flex items-center space-x-2 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-sm font-medium rounded-lg transition-all" title="Mulai Diskusi Baru / Bersihkan Chat">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="hidden sm:inline">Diskusi Baru</span>
+            </button>
             <button onclick="toggleSettingsModal()" class="flex items-center space-x-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-all">
                 <i class="fa-solid fa-key text-teal-600"></i>
                 <span class="hidden md:inline">API Key</span>
@@ -86,7 +91,6 @@
                     </button>
                 </div>
                 
-                <!-- Unggah File, Tulis Teks & Rekam Suara -->
                 <div class="grid grid-cols-3 gap-1.5">
                     <label class="flex flex-col items-center justify-center py-2.5 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 hover:border-teal-500 transition-all text-center" title="Unggah File">
                         <i class="fa-solid fa-cloud-arrow-up text-teal-600 text-base mb-1"></i>
@@ -105,21 +109,17 @@
                 <p class="text-[10px] text-slate-400 mt-2 text-center">Mendukung PDF, Gambar, TXT, & Rekaman Suara</p>
             </div>
 
-            <!-- Daftar Dokumen Terunggah -->
             <div id="sources-list" class="flex-1 overflow-y-auto p-4 space-y-2">
-                <!-- Tampilan kosong jika belum ada dokumen -->
                 <div id="empty-sources-view" class="text-center py-8 px-4">
                     <div class="w-16 h-16 mx-auto bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
                         <i class="fa-solid fa-file-invoice text-2xl"></i>
                     </div>
                     <p class="text-xs text-slate-600 font-medium">Belum Ada Sumber</p>
-                    <p class="text-[11px] text-slate-400 mt-1">Unggah berkas atau tulis catatan penting untuk memulai riset Anda.</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Unggah berkas atau rekam notula suara penting untuk memulai riset Anda.</p>
                 </div>
-                <!-- Wadah Item Dokumen -->
                 <div id="sources-items-list" class="space-y-2"></div>
             </div>
             
-            <!-- Quick Prompts Panel -->
             <div class="p-4 border-t border-slate-100 bg-slate-50">
                 <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Aksi Instan</h3>
                 <div class="space-y-1.5">
@@ -137,8 +137,6 @@
         </aside>
 
         <main class="flex-1 flex flex-col h-full bg-slate-50 relative">
-            
-            <!-- Mobile Source Button (Hanya tampil di HP) -->
             <div class="md:hidden flex items-center justify-between px-4 py-2 border-b border-slate-200 bg-white z-10 shrink-0">
                 <button onclick="toggleMobileSidebar()" class="text-xs font-semibold text-teal-600 flex items-center gap-1">
                     <i class="fa-solid fa-folder-open"></i> Kelola Sumber (<span id="mobile-source-count">0</span>)
@@ -149,17 +147,15 @@
                 </div>
             </div>
 
-            <!-- Tampilan Chat -->
+            <!-- Tampilan Chat utama -->
             <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-                <!-- Sambutan Selamat Datang -->
                 <div id="welcome-message-view" class="max-w-3xl mx-auto my-8 text-center px-4">
-                    <span class="bg-teal-50 text-teal-700 font-bold px-3 py-1 rounded-full text-xs">Aplikasi Asisten Cakra-Ai</span>
+                    <span class="bg-teal-50 text-teal-700 font-bold px-3 py-1 rounded-full text-xs">Asisten Cakra-Ai</span>
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-4 leading-tight">Mulai Belajar dengan Efisiensi Maksimal</h2>
                     <p class="text-sm text-slate-600 mt-2 max-w-lg mx-auto">
-                        Unggah semua materi referensi Anda di sebelah kiri, kemudian ajukan pertanyaan apa pun di bawah ini. Cakra-Ai akan memproses seluruh teks dan elemen visual gambar yang ada.
+                        Unggah berkas referensi Anda atau lakukan perekaman suara jalannya rapat di sebelah kiri, kemudian ajukan pertanyaan. Cakra-Ai akan memetakan informasi secara rapi beserta tanda waktu (*timestamp*).
                     </p>
                     
-                    <!-- Panduan Instan Gambar -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center">
                             <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
@@ -177,10 +173,10 @@
                         </div>
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center">
                             <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-microchip text-lg"></i>
+                                <i class="fa-solid fa-file-export text-lg"></i>
                             </div>
-                            <h4 class="font-semibold text-xs text-slate-800">Kekuatan Multi-Modal</h4>
-                            <p class="text-[11px] text-slate-500 mt-1 text-center">Analisis & identifikasi detail teks di dalam berkas gambar.</p>
+                            <h4 class="font-semibold text-xs text-slate-800">Ekspor Diskusi (.doc)</h4>
+                            <p class="text-[11px] text-slate-500 mt-1 text-center">Simpan respons diskursus Anda secara utuh ke dokumen formal Microsoft Word.</p>
                         </div>
                     </div>
                 </div>
@@ -204,11 +200,9 @@
                 </div>
             </div>
 
-            <!-- PANEL INPUT CHAT -->
             <div class="p-4 bg-white border-t border-slate-200 shrink-0">
                 <div class="max-w-4xl mx-auto">
                     
-                    <!-- Info Indikator Sumber Terpilih -->
                     <div id="sources-badge-indicator" class="mb-2 hidden flex items-center space-x-2 text-xs text-teal-700 bg-teal-50 px-3 py-1.5 rounded-lg w-fit">
                         <i class="fa-solid fa-circle-check"></i>
                         <span id="sources-badge-text">0 sumber digunakan sebagai konteks</span>
@@ -216,14 +210,12 @@
 
                     <div class="relative flex items-end border border-slate-300 rounded-xl shadow-sm focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-100 transition-all bg-slate-50 p-2">
                         
-                        <!-- Tombol Rekam Suara (Speech-to-Text) -->
                         <button id="stt-button" onclick="toggleSpeechToText()" class="p-2.5 text-slate-500 hover:text-teal-600 hover:bg-slate-200 rounded-lg transition-all shrink-0 mr-1 flex items-center justify-center relative" title="Ketuk untuk berbicara">
                             <i id="stt-icon" class="fa-solid fa-microphone text-lg"></i>
                             <span id="stt-glow" class="absolute inset-0 bg-rose-500/10 rounded-lg animate-ping hidden"></span>
                         </button>
 
                         <div class="flex-1 flex flex-col">
-                            <!-- Visualizer Wave saat merekam suara -->
                             <div id="stt-wave-container" class="hidden px-2 py-1 flex items-center gap-1.5 text-rose-600 text-xs font-medium animate-pulse">
                                 <span class="w-1.5 h-1.5 bg-rose-600 rounded-full animate-bounce"></span>
                                 <span class="w-1.5 h-1.5 bg-rose-600 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
@@ -233,7 +225,6 @@
                             <textarea id="chat-input" rows="1" placeholder="Tanyakan apa saja tentang dokumen & gambar Anda..." class="w-full bg-transparent resize-none border-0 focus:ring-0 outline-none py-2 px-2 text-slate-800 text-sm placeholder-slate-400 max-h-36 overflow-y-auto leading-relaxed" onkeydown="handleInputKeydown(event)"></textarea>
                         </div>
 
-                        <!-- Tombol Kirim Pertanyaan -->
                         <button onclick="sendMessage()" class="bg-gradient-to-tr from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white p-2.5 rounded-lg shadow-sm transition-all ml-1 shrink-0 flex items-center justify-center">
                             <i class="fa-solid fa-paper-plane text-sm"></i>
                         </button>
@@ -247,7 +238,7 @@
         </main>
     </div>
 
-    <!-- MODAL 1: Pengaturan API Key -->
+    <!-- Modal Settings API Key -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-all">
             <div class="bg-gradient-to-r from-teal-600 to-blue-700 p-5 text-white flex justify-between items-center">
@@ -272,7 +263,6 @@
                     </div>
                 </div>
                 
-                <!-- Voice Settings -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1.5">Opsi Suara Read Aloud (Cakra-Ai TTS)</label>
                     <select id="voice-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-200 outline-none">
@@ -298,7 +288,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Tulis / Tempel Teks Sumber Baru -->
+    <!-- Modal Buat Tulis Teks -->
     <div id="add-text-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-all">
             <div class="bg-slate-900 p-4 text-white flex justify-between items-center">
@@ -330,7 +320,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Informasi Aplikasi -->
+    <!-- Modal Informasi Cakra-Ai -->
     <div id="info-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-6 relative">
             <button onclick="toggleInfoModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
@@ -344,18 +334,68 @@
                     <strong>Cakra-Ai Lite</strong> adalah asisten mandiri yang cerdas. Berbeda dengan chatbot biasa, Cakra-Ai di sini hanya akan memfokuskan pemikirannya pada materi/dokumen sumber yang Anda unggah.
                 </p>
                 <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1.5">
-                    <div class="font-semibold text-slate-700">Daftar Fitur Unggulan:</div>
+                    <div class="font-semibold text-slate-700">Daftar Fitur Utama:</div>
                     <div>🎯 <strong>Konteks Terisolasi:</strong> Bertanya spesifik dari data unggahan Anda.</div>
                     <div>🎙️ <strong>Input Suara (STT):</strong> Menggunakan dikte suara Bahasa Indonesia bawaan premium.</div>
                     <div>🔊 <strong>Read Aloud Premium:</strong> Menggunakan suara orisinal buatan Cakra-Ai TTS.</div>
-                    <div>🖼️ <strong>Analisis Gambar:</strong> Unggah banyak gambar, biarkan Cakra-Ai menerangkannya.</div>
+                    <div>📥 <strong>Unduh & Ekspor:</strong> Simpan respons dan diskusi lengkap ke berkas Microsoft Word (.doc) terstruktur.</div>
+                    <div>⏱️ <strong>Timestamp Presisi:</strong> Semua pesan serta rekaman suara (transkrip rapat) dilacak dengan penanda waktu riil.</div>
                 </div>
-                <p class="text-[11px] text-slate-400">Versi 1.1.0 • Dikembangkan khusus dengan Cakra-Ai.</p>
+                <p class="text-[11px] text-slate-400">Versi 1.3.5 • Dikembangkan khusus dengan Cakra-Ai.</p>
             </div>
         </div>
     </div>
 
-    <!-- MOBILE SIDEBAR DRAWER -->
+    <!-- Modal Rekam Suara (Rapat / Notulensi) -->
+    <div id="record-voice-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-all">
+            <div class="bg-rose-900 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-microphone-lines text-rose-300"></i> Rekam Sumber Suara Baru (Notulensi)
+                </h3>
+                <button onclick="toggleRecordVoiceModal(false)" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Sumber / Rapat</label>
+                    <input id="voice-doc-title" type="text" placeholder="Contoh: Hasil Rekaman Suara Cakra-Ai" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none">
+                </div>
+                
+                <div class="flex flex-col items-center justify-center py-6 border border-slate-100 bg-slate-50 rounded-xl relative overflow-hidden">
+                    <div id="voice-record-wave" class="hidden flex items-end justify-center gap-1 mb-4 h-10">
+                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-4"></span>
+                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-8" style="animation-delay: 0.1s"></span>
+                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-10" style="animation-delay: 0.2s"></span>
+                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-6" style="animation-delay: 0.3s"></span>
+                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-8" style="animation-delay: 0.4s"></span>
+                    </div>
+                    
+                    <button id="voice-record-btn" onclick="toggleVoiceSourceRecording()" class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-all relative z-10">
+                        <i id="voice-record-btn-icon" class="fa-solid fa-microphone text-2xl"></i>
+                    </button>
+                    <p id="voice-record-status" class="text-xs text-slate-500 mt-3 font-semibold">Ketuk tombol merah di atas untuk mulai bersuara</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hasil Transkripsi Rapat Ber-Timestamp</label>
+                    <textarea id="voice-doc-content" rows="6" placeholder="Hasil transkripsi rapat beserta timestamp detak waktu riil akan tercatat otomatis di sini..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono focus:border-teal-500 outline-none resize-none bg-slate-900 text-emerald-400"></textarea>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button onclick="saveVoiceSource()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg text-xs shadow transition-all">
+                        Simpan sebagai Dokumen
+                    </button>
+                    <button onclick="toggleRecordVoiceModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg text-xs transition-all">
+                        Kembali
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar -->
     <div id="mobile-sidebar" class="fixed inset-y-0 left-0 w-80 bg-white z-40 transform -translate-x-full transition-transform duration-300 md:hidden shadow-2xl flex flex-col">
         <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
             <h3 class="font-bold text-slate-800 flex items-center gap-2">
@@ -365,9 +405,7 @@
                 <i class="fa-solid fa-chevron-left text-lg"></i>
             </button>
         </div>
-        <div id="mobile-sources-container" class="flex-1 overflow-y-auto p-4 space-y-3">
-            <!-- Sumber akan disalin ke sini lewat JS -->
-        </div>
+        <div id="mobile-sources-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
         <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
             <div class="grid grid-cols-3 gap-1.5">
                 <label class="flex flex-col items-center justify-center py-2 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-white hover:bg-slate-50 text-center">
@@ -390,68 +428,15 @@
         </div>
     </div>
     
-    <!-- MODAL 4: Rekam Suara Sumber Baru -->
-    <div id="record-voice-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-all">
-            <div class="bg-rose-900 p-4 text-white flex justify-between items-center">
-                <h3 class="font-bold text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-microphone-lines text-rose-300"></i> Rekam Sumber Suara Baru
-                </h3>
-                <button onclick="toggleRecordVoiceModal(false)" class="text-white/80 hover:text-white">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="p-5 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Sumber</label>
-                    <input id="voice-doc-title" type="text" placeholder="Contoh: Hasil Rekaman Suara Cakra-Ai" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none">
-                </div>
-                
-                <!-- Area Gelombang dan Tombol Rekam -->
-                <div class="flex flex-col items-center justify-center py-6 border border-slate-100 bg-slate-50 rounded-xl relative overflow-hidden">
-                    <!-- Animasi Gelombang Suara -->
-                    <div id="voice-record-wave" class="hidden flex items-end justify-center gap-1 mb-4 h-10">
-                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-4"></span>
-                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-8" style="animation-delay: 0.1s"></span>
-                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-10" style="animation-delay: 0.2s"></span>
-                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-6" style="animation-delay: 0.3s"></span>
-                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-8" style="animation-delay: 0.4s"></span>
-                    </div>
-                    
-                    <!-- Tombol Utama Mulai/Berhenti -->
-                    <button id="voice-record-btn" onclick="toggleVoiceSourceRecording()" class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-all relative z-10">
-                        <i id="voice-record-btn-icon" class="fa-solid fa-microphone text-2xl"></i>
-                    </button>
-                    <p id="voice-record-status" class="text-xs text-slate-500 mt-3 font-semibold">Ketuk tombol merah di atas untuk mulai bersuara</p>
-                </div>
-
-                <!-- Hasil Konversi Teks -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hasil Transkripsi Suara (Bisa diedit secara manual)</label>
-                    <textarea id="voice-doc-content" rows="4" placeholder="Suara ucapan Anda akan langsung dikonversi menjadi teks di sini..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none resize-none"></textarea>
-                </div>
-                
-                <div class="flex space-x-2">
-                    <button onclick="saveVoiceSource()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg text-xs shadow transition-all">
-                        Simpan sebagai Dokumen
-                    </button>
-                    <button onclick="toggleRecordVoiceModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg text-xs transition-all">
-                        Kembali
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="fixed bottom-24 right-4 z-50 space-y-2 max-w-sm pointer-events-none"></div>
 
     <script>
+        // Membungkus localStorage secara aman untuk menghindari batasan Iframe Sandbox
         function safeGetItem(key, defaultValue = '') {
             try {
                 return localStorage.getItem(key) || defaultValue;
             } catch (e) {
-                console.warn("Penyimpanan lokal (localStorage) diblokir oleh sandbox iframe. Beralih ke penyimpanan sementara di memori.", e);
+                console.warn("Penyimpanan lokal diblokir. Menggunakan memori sementara.", e);
                 return defaultValue;
             }
         }
@@ -460,41 +445,46 @@
             try {
                 localStorage.setItem(key, value);
             } catch (e) {
-                console.warn("Gagal menulis ke penyimpanan lokal (localStorage) karena batasan keamanan lingkungan.", e);
+                console.warn("Gagal menulis ke penyimpanan lokal.", e);
             }
         }
 
+        // Fungsi pembuat timestamp MM/DD/YYYY HH:MM:SS
+        function getFormattedTimestamp() {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `${mm}/${dd}/${yyyy} ${hh}:${min}:${ss}`;
+        }
+
         let state = {
-            sources: [], // Menyimpan objek dokumen { id, title, type, content, base64 (jika gambar) }
+            sources: [],
             activeApiKey: safeGetItem('gemini_notebook_key', ''),
-            messages: [], // Riwayat percakapan chat { role, text, sourcesReferenced }
+            messages: [],
             isRecording: false,
             recognition: null,
             audioPlayer: null,
             currentPlayingId: null,
             selectedVoice: safeGetItem('gemini_notebook_voice', 'Puck'),
-            // Variabel state perekaman sumber suara baru
             isRecordingSource: false,
             sourceRecognition: null
         };
 
-        // Menyiapkan Worker PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         window.onload = function() {
-            // Memasukkan API key dan pengesetan suara default ke form isian
             document.getElementById('api-key-input').value = state.activeApiKey;
             document.getElementById('voice-select').value = state.selectedVoice;
 
-            // Memasukkan dokumen Demo awal agar pengguna langsung bisa mencoba
             injectDefaultDemoSource();
-            
-            // Inisialisasi Speech Recognition
             initSpeechRecognition();
             initSourceSpeechRecognition();
         };
 
-        // Pembuat Toast Mandiri (Pengganti alert())
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -514,12 +504,10 @@
             toast.innerHTML = `${icon} <span class="text-slate-800">${message}</span>`;
             container.appendChild(toast);
 
-            // Trigger Animation
             setTimeout(() => {
                 toast.classList.remove('translate-y-2', 'opacity-0');
             }, 10);
 
-            // Otomatis Hapus
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => {
@@ -529,8 +517,7 @@
         }
 
         function toggleSettingsModal() {
-            const modal = document.getElementById('settings-modal');
-            modal.classList.toggle('hidden');
+            document.getElementById('settings-modal').classList.toggle('hidden');
         }
 
         function toggleAddTextModal(show) {
@@ -552,9 +539,25 @@
             document.getElementById('info-modal').classList.toggle('hidden');
         }
 
+        function clearChatHistory() {
+            const container = document.getElementById('chat-messages-container');
+            const welcomeView = document.getElementById('welcome-message-view');
+            
+            if (welcomeView) {
+                welcomeView.classList.remove('hidden');
+                container.innerHTML = '';
+                container.appendChild(welcomeView);
+            } else {
+                container.innerHTML = '';
+            }
+            
+            state.messages = [];
+            stopAudioPlayback();
+            showToast("Sesi diskusi disetel ulang! Riwayat obrolan telah dibersihkan.", "success");
+        }
+
         function toggleMobileSidebar() {
-            const sidebar = document.getElementById('mobile-sidebar');
-            sidebar.classList.toggle('-translate-x-full');
+            document.getElementById('mobile-sidebar').classList.toggle('-translate-x-full');
         }
 
         function toggleKeyVisibility() {
@@ -587,14 +590,15 @@
                 id: 'demo-source-1',
                 title: 'Panduan Cakra-Ai.txt',
                 type: 'text',
-                content: `Cakra-Ai Lite adalah asisten riset pintar Anda yang ditenagai oleh model Cakra-Ai.
+                content: `Cakra-Ai Lite adalah asisten pintar Anda yang ditenagai oleh model Cakra-Ai.
 Aplikasi ini memungkinkan Anda untuk mengunggah berbagai berkas media, kemudian melokalisasi pengetahuan dari berkas tersebut untuk dijawab kembali oleh Cakra-Ai.
 
 Petunjuk Penggunaan Fitur:
 1. Menambahkan Sumber: Gunakan panel kiri untuk mengunggah berkas teks, gambar, atau dokumen PDF. Anda juga bisa menuliskannya secara manual.
 2. Bertanya Kepada Cakra-Ai: Masukkan pertanyaan Anda pada kolom chat di bagian bawah. Cakra-Ai hanya akan merujuk data dari Dokumen Sumber Anda saat memproses jawaban.
 3. Input Suara: Tekan tombol Mikrofon untuk mendikte pertanyaan Anda tanpa mengetik.
-4. Membaca Suara (Read Aloud): Setiap jawaban Cakra-Ai dilengkapi dengan ikon Pembicara (Speaker). Ketuk ikon tersebut untuk mendengarkan teks dibacakan dengan teknologi Cakra-Ai Synthesizer yang realistis.`
+4. Membaca Suara (Read Aloud): Setiap jawaban Cakra-Ai dilengkapi dengan ikon Pembicara (Speaker). Ketuk ikon tersebut untuk mendengarkan teks dibacakan dengan teknologi Cakra-Ai Synthesizer yang realistis.
+5. Notulensi Rapat Ber-Timestamp: Gunakan tombol "Rekam Suara" untuk meresap suara rapat secara dinamis. Hasil transkripsi akan dilacak dengan timestamp presisi.`
             };
             
             state.sources.push(defaultDemo);
@@ -617,7 +621,6 @@ Petunjuk Penggunaan Fitur:
                 showToast(`Memproses berkas: ${fileName}...`);
                 
                 if (fileType.startsWith('text/') || fileName.endsWith('.md')) {
-                    // Pengolahan file Teks Plain
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         addNewSource(fileName, 'text', event.target.result);
@@ -625,7 +628,6 @@ Petunjuk Penggunaan Fitur:
                     reader.readAsText(file);
                 } 
                 else if (fileType === 'application/pdf') {
-                    // Pengolahan PDF dengan PDF.js
                     try {
                         const reader = new FileReader();
                         reader.onload = async function(event) {
@@ -653,7 +655,6 @@ Petunjuk Penggunaan Fitur:
                     }
                 } 
                 else if (fileType.startsWith('image/')) {
-                    // Pengolahan Gambar untuk Pemahaman Visual Gemini
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         const base64Data = event.target.result.split(',')[1];
@@ -667,7 +668,6 @@ Petunjuk Penggunaan Fitur:
             }
         }
 
-        // Menyimpan teks buatan pengguna secara manual
         function saveCustomTextSource() {
             const titleInput = document.getElementById('new-doc-title').value.trim();
             const contentInput = document.getElementById('new-doc-content').value.trim();
@@ -718,12 +718,10 @@ Petunjuk Penggunaan Fitur:
             const sourceCountEl = document.getElementById('source-count');
             const mobileSourceCountEl = document.getElementById('mobile-source-count');
 
-            // Set Jumlah Total Sumber
             const totalSources = state.sources.length;
             sourceCountEl.textContent = totalSources;
             mobileSourceCountEl.textContent = totalSources;
 
-            // Atur Visibilitas Badge Indikator di atas kotak Chat
             if (totalSources > 0) {
                 badgeIndicator.classList.remove('hidden');
                 badgeText.textContent = `${totalSources} sumber aktif digunakan sebagai referensi`;
@@ -733,15 +731,12 @@ Petunjuk Penggunaan Fitur:
                 emptyView.classList.remove('hidden');
             }
 
-            // Render Ulang Item Sumber di Sidebar dan Mobile menu dengan visual rendering gambar asli
             let htmlContent = '';
-            
             state.sources.forEach(src => {
                 let icon = '<i class="fa-solid fa-file-lines text-teal-600 text-sm"></i>';
                 if (src.type === 'pdf') {
                     icon = '<i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>';
                 } else if (src.type === 'image') {
-                    // Gunakan thumbnail visual asli dari gambar dasar Base64
                     icon = `<img src="data:${src.mimeType};base64,${src.base64}" class="w-6 h-6 rounded object-cover border border-slate-200 shadow-sm" alt="Thumbnail">`;
                 }
 
@@ -774,8 +769,8 @@ Petunjuk Penggunaan Fitur:
             }
 
             state.recognition = new SpeechRecognition();
-            state.recognition.continuous = false; // Berhenti merekam saat pembicara mengambil jeda lama
-            state.recognition.lang = 'id-ID'; // Menyetel default pengenalan suara ke Bahasa Indonesia
+            state.recognition.continuous = false;
+            state.recognition.lang = 'id-ID';
             state.recognition.interimResults = false;
 
             state.recognition.onstart = function() {
@@ -801,17 +796,14 @@ Petunjuk Penggunaan Fitur:
                 const transcript = event.results[0][0].transcript;
                 const inputEl = document.getElementById('chat-input');
                 
-                // Tambahkan hasil teks ucapan ke input form chat
                 if (inputEl.value.trim() !== '') {
                     inputEl.value += ' ' + transcript;
                 } else {
                     inputEl.value = transcript;
                 }
                 
-                // Atur ukuran baris otomatis
                 inputEl.style.height = 'auto';
                 inputEl.style.height = inputEl.scrollHeight + 'px';
-                
                 showToast("Berhasil mengubah suara ke teks!", "success");
             };
         }
@@ -821,23 +813,23 @@ Petunjuk Penggunaan Fitur:
             if (!SpeechRecognition) return;
 
             state.sourceRecognition = new SpeechRecognition();
-            state.sourceRecognition.continuous = true; // Rekam berkelanjutan agar user leluasa berbicara
+            state.sourceRecognition.continuous = true;
             state.sourceRecognition.lang = 'id-ID';
-            state.sourceRecognition.interimResults = true; // Hasil real-time saat berbicara
+            state.sourceRecognition.interimResults = false;
 
             state.sourceRecognition.onstart = function() {
                 state.isRecordingSource = true;
                 document.getElementById('voice-record-btn').className = 'w-16 h-16 rounded-full bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center shadow-md transition-all relative z-10 animate-pulse';
                 document.getElementById('voice-record-btn-icon').className = 'fa-solid fa-circle-stop text-2xl text-rose-500';
-                document.getElementById('voice-record-status').textContent = 'Mendengarkan ucapan... Ketuk tombol ini lagi untuk berhenti';
+                document.getElementById('voice-record-status').textContent = 'Sedang Merekam Notula Rapat... Ketuk untuk berhenti';
                 document.getElementById('voice-record-status').className = 'text-xs text-rose-600 mt-3 font-semibold animate-pulse';
                 document.getElementById('voice-record-wave').classList.remove('hidden');
-                showToast("Mulai merekam suara untuk dokumen sumber...", "info");
+                showToast("Sesi rekam rapat dimulai. Timestamp otomatis terpasang per ucapan.", "info");
             };
 
             state.sourceRecognition.onerror = function(event) {
-                console.error("Kesalahan Speech Recognition Sumber:", event.error);
-                showToast("Gagal merekam suara sumber: " + event.error, "error");
+                console.error("Kesalahan Speech Recognition Sumber Rapat:", event.error);
+                showToast("Gagal merekam suara rapat: " + event.error, "error");
                 stopSourceRecording();
             };
 
@@ -849,7 +841,11 @@ Petunjuk Penggunaan Fitur:
                 let currentResult = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        currentResult += event.results[i][0].transcript + ' ';
+                        const textChunk = event.results[i][0].transcript.trim();
+                        if (textChunk) {
+                            const timeStampStr = getFormattedTimestamp();
+                            currentResult += `[${timeStampStr}] Pembicara: "${textChunk}"\n`;
+                        }
                     }
                 }
                 const contentEl = document.getElementById('voice-doc-content');
@@ -867,15 +863,8 @@ Petunjuk Penggunaan Fitur:
             const modal = document.getElementById('record-voice-modal');
             if (show) {
                 modal.classList.remove('hidden');
-                
-                // Membuat judul dinamis instan otomatis berdasarkan tanggal dan jam lokal
-                const now = new Date();
-                const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-                const timeOptions = { hour: '2-digit', minute: '2-digit' };
-                const dateString = now.toLocaleDateString('id-ID', dateOptions);
-                const timeString = now.toLocaleTimeString('id-ID', timeOptions).replace('.', ':');
-                
-                document.getElementById('voice-doc-title').value = `Rekaman Suara - ${dateString} (${timeString})`;
+                const nowStr = getFormattedTimestamp().replace(/\//g, '-').replace(' ', '_');
+                document.getElementById('voice-doc-title').value = `Notulensi Rapat_${nowStr}`;
                 document.getElementById('voice-doc-content').value = '';
             } else {
                 if (state.isRecordingSource) {
@@ -912,7 +901,7 @@ Petunjuk Penggunaan Fitur:
             if (btn) btn.className = 'w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-all relative z-10';
             if (btnIcon) btnIcon.className = 'fa-solid fa-microphone text-2xl';
             if (status) {
-                status.textContent = 'Perekaman selesai. Ketuk kembali untuk merekam lagi';
+                status.textContent = 'Perekaman selesai. Ketuk kembali untuk merekam';
                 status.className = 'text-xs text-slate-500 mt-3 font-semibold';
             }
             if (wave) wave.classList.add('hidden');
@@ -923,18 +912,18 @@ Petunjuk Penggunaan Fitur:
             const contentInput = document.getElementById('voice-doc-content').value.trim();
 
             if (!titleInput || !contentInput) {
-                showToast("Judul sumber dan Konten transkripsi tidak boleh kosong!", "error");
+                showToast("Judul rapat dan Konten transkripsi tidak boleh kosong!", "error");
                 return;
             }
 
             addNewSource(titleInput.endsWith('.txt') ? titleInput : titleInput + '.txt', 'text', contentInput);
             toggleRecordVoiceModal(false);
-            showToast("Sumber teks dari rekaman suara berhasil disimpan!", "success");
+            showToast("Hasil transkrip rapat ber-timestamp berhasil disimpan!", "success");
         }
 
         function toggleSpeechToText() {
             if (!state.recognition) {
-                showToast("Browser Anda tidak mendukung perekaman suara (Speech-to-Text). Gunakan Chrome atau Safari.", "error");
+                showToast("Browser Anda tidak mendukung perekaman suara.", "error");
                 return;
             }
 
@@ -964,7 +953,6 @@ Petunjuk Penggunaan Fitur:
             }
         }
 
-        // Auto-growing Textarea
         const tx = document.getElementById('chat-input');
         tx.addEventListener("input", function() {
             this.style.height = "auto";
@@ -977,31 +965,25 @@ Petunjuk Penggunaan Fitur:
             
             if (!userQuery) return;
 
-            // Sembunyikan pesan panduan awal
             const welcomeView = document.getElementById('welcome-message-view');
             if (welcomeView) welcomeView.classList.add('hidden');
 
-            // Tambahkan pesan user ke UI
             appendChatMessage('user', userQuery);
             inputEl.value = '';
             inputEl.style.height = 'auto';
 
-            // Menampilkan loading indicator
             const loadingMessageId = appendChatMessage('ai', 'Sedang memproses seluruh sumber Anda...', true);
 
-            // Periksa API Key
             if (!state.activeApiKey) {
                 updateAiChatMessage(loadingMessageId, '⚠️ **API Key Belum Diisi!**\nSilakan klik tombol **"API Key"** di kanan atas untuk memasukkan Google Gemini API Key Anda agar aplikasi dapat bekerja.', false);
                 return;
             }
 
-            // Membangun payload konteks dan part multi-modal dari semua dokumen sumber yang ada
             let contextText = "";
             const parts = [];
             
             state.sources.forEach(src => {
                 if (src.type === 'image' && src.base64) {
-                    // Dukung multi-image visual part secara simultan
                     parts.push({
                         inlineData: {
                             mimeType: src.mimeType || "image/png",
@@ -1013,10 +995,8 @@ Petunjuk Penggunaan Fitur:
                 }
             });
 
-            // Masukkan teks kueri pengguna
             parts.push({ text: userQuery });
 
-            // Menyusun Prompt dengan penguncian pengetahuan
             const systemPrompt = `Anda adalah asisten riset Cakra-Ai pintar yang khusus dikembangkan dengan fokus ketaatan tinggi pada materi referensi.
 Anda harus bertindak sebagai ahli yang menjawab pertanyaan HANYA berdasarkan teks sumber dan berkas gambar visual yang disediakan sebagai input.
 Gunakan format markdown yang rapi, poin-poin tebal, serta subjudul untuk memudahkan pembacaan materi.
@@ -1026,7 +1006,6 @@ Berikut adalah dokumen sumber referensi tekstual Anda:
 ${contextText}`;
 
             try {
-                // Melakukan panggil API ke model gemini-3-flash-preview
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${state.activeApiKey}`;
 
                 const payload = {
@@ -1039,10 +1018,7 @@ ${contextText}`;
                     }
                 };
 
-                // Implementasi Exponential Backoff Fetch
                 const responseText = await fetchWithExponentialBackoff(apiUrl, payload);
-                
-                // Tampilkan hasil jawaban AI
                 updateAiChatMessage(loadingMessageId, responseText, false);
                 
             } catch (error) {
@@ -1061,10 +1037,9 @@ ${contextText}`;
                     });
 
                     if (response.status === 429) {
-                        // Jika kena limit kuota, tunggu lalu ulangi
                         console.debug(`Throttling terdeteksi. Mengulang dalam ${delay}md...`);
                         await new Promise(res => setTimeout(res, delay));
-                        delay *= 2; // Lipat gandakan jeda waktu
+                        delay *= 2;
                         continue;
                     }
 
@@ -1081,7 +1056,7 @@ ${contextText}`;
                     return text;
 
                 } catch (error) {
-                    if (i === retries - 1) throw error; // Lempar eror jika sudah mencapai batas percobaan ulang
+                    if (i === retries - 1) throw error;
                     await new Promise(res => setTimeout(res, delay));
                     delay *= 2;
                 }
@@ -1110,27 +1085,40 @@ ${contextText}`;
         function appendChatMessage(role, text, isLoading = false) {
             const container = document.getElementById('chat-messages-container');
             const messageId = 'msg-' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const timeStampStr = getFormattedTimestamp();
             
             const wrapper = document.createElement('div');
             wrapper.id = messageId;
             wrapper.className = `flex w-full ${role === 'user' ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`;
+            wrapper.setAttribute('data-timestamp', timeStampStr);
 
             let bubbleContent = '';
             
             if (role === 'user') {
+                wrapper.setAttribute('data-original-text', text);
                 bubbleContent = `
-                    <div class="bg-gradient-to-tr from-slate-700 to-slate-800 text-white rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%] md:max-w-2xl shadow-sm">
-                        <p class="text-xs font-semibold text-slate-300 mb-1">Anda</p>
+                    <div class="bg-gradient-to-tr from-slate-700 to-slate-800 text-white rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%] md:max-w-2xl shadow-sm relative group">
+                        <div class="flex justify-between items-center mb-1 text-[10px] text-slate-300">
+                            <span class="font-semibold">Anda</span>
+                        </div>
                         <p class="text-sm whitespace-pre-line leading-relaxed">${escapeHtml(text)}</p>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[9px] text-slate-400 font-mono">${timeStampStr}</span>
+                            <div class="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center space-x-1 bg-slate-800/80 px-1.5 py-0.5 rounded-md">
+                                <button onclick="downloadMessage('${messageId}')" class="text-slate-300 hover:text-white transition-all" title="Unduh Bagian Ini (.doc)">
+                                    <i class="fa-solid fa-download text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else {
+                wrapper.setAttribute('data-original-text', text);
                 bubbleContent = `
                     <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-5 py-4 max-w-[85%] md:max-w-2xl shadow-sm relative group">
                         <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-1.5">
                             <span class="text-xs font-bold text-teal-600 flex items-center gap-1.5">
                                 <i class="fa-solid fa-sparkles"></i> Cakra-Ai
-                                <!-- Wave Equalizer, default tersembunyi -->
                                 <span class="eq-waves hidden items-center gap-0.5 ml-1">
                                     <span class="eq-bar"></span>
                                     <span class="eq-bar"></span>
@@ -1141,6 +1129,9 @@ ${contextText}`;
                                 <button onclick="triggerReadAloud('${messageId}')" class="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-teal-600 transition-all" title="Baca Jawaban (Read Aloud)">
                                     <i class="fa-solid fa-volume-high text-sm speaker-icon"></i>
                                 </button>
+                                <button onclick="downloadMessage('${messageId}')" class="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-teal-600 transition-all" title="Unduh Bagian Ini (.doc)">
+                                    <i class="fa-solid fa-download text-xs"></i>
+                                </button>
                                 <button onclick="copyToClipboard('${messageId}')" class="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-teal-600 transition-all" title="Salin Teks">
                                     <i class="fa-solid fa-copy text-xs"></i>
                                 </button>
@@ -1149,14 +1140,15 @@ ${contextText}`;
                         <div class="prose-container text-sm leading-relaxed text-slate-700 space-y-2">
                             ${isLoading ? `<div class="flex items-center space-x-2 text-slate-400 py-2"><i class="fa-solid fa-spinner animate-spin"></i> <span>Cakra-Ai sedang menyusun jawaban...</span></div>` : parseMarkdown(text)}
                         </div>
+                        <div class="text-right mt-1.5 border-t border-slate-50 pt-1">
+                            <span class="text-[9px] text-slate-400 font-mono">${timeStampStr}</span>
+                        </div>
                     </div>
                 `;
             }
 
             wrapper.innerHTML = bubbleContent;
             container.appendChild(wrapper);
-            
-            // Gulir ke posisi paling bawah
             container.scrollTop = container.scrollHeight;
             return messageId;
         }
@@ -1165,8 +1157,6 @@ ${contextText}`;
             const bubble = document.querySelector(`#${messageId} .prose-container`);
             if (bubble) {
                 bubble.innerHTML = isLoading ? `<div class="flex items-center space-x-2 text-slate-400 py-2"><i class="fa-solid fa-spinner animate-spin"></i> <span>Cakra-Ai sedang memikirkan materi...</span></div>` : parseMarkdown(text);
-                
-                // Tambahkan teks asli ke atribut dataset agar bisa dibaca ulang oleh TTS
                 const messageWrapper = document.getElementById(messageId);
                 messageWrapper.setAttribute('data-original-text', text);
             }
@@ -1190,31 +1180,282 @@ ${contextText}`;
 
         function parseMarkdown(text) {
             let html = text;
-            
-            // Escape HTML Dasar agar aman
             html = escapeHtml(html);
-            
-            // Konversi Kode Blok
             html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-900 text-slate-100 p-3 rounded-lg overflow-x-auto text-xs my-2 font-mono">$1</pre>');
-            
-            // Konversi Inline Code
             html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-teal-700 px-1 py-0.5 rounded text-xs font-mono">$1</code>');
-            
-            // Konversi Bullet Points
             html = html.replace(/^\s*-\s+(.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
             html = html.replace(/^\s*\*\s+(.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
-            
-            // Konversi Tebal
             html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
-            
-            // Konversi Baris Baru
             html = html.replace(/\n/g, '<br>');
-            
             return html;
         }
 
-        // Fitur Copy Clipboard dengan fallback execCommand
-        function copyToClipboard(messageId) {
+        function getWordDocWrapper(bodyContent, documentTitle = "Laporan Sesi Diskusi") {
+            const formattedDate = getFormattedTimestamp();
+
+            return `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>${documentTitle}</title>
+                <!--[if gte mso 9]>
+                <xml>
+                    <w:WordDocument>
+                        <w:View>Print</w:View>
+                        <w:Zoom>100</w:Zoom>
+                        <w:DoNotOptimizeForBrowser/>
+                    </w:WordDocument>
+                </xml>
+                <![endif]-->
+                <style>
+                    @page {
+                        size: 8.5in 11in;
+                        margin: 1.0in 1.0in 1.0in 1.0in;
+                        mso-header-margin: .5in;
+                        mso-footer-margin: .5in;
+                        mso-paper-source: 0;
+                    }
+                    body {
+                        font-family: 'Segoe UI', 'Arial', sans-serif;
+                        color: #1e293b;
+                        line-height: 1.6;
+                        font-size: 11pt;
+                    }
+                    .header-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 25pt;
+                        border-bottom: 3px solid #0d9488;
+                    }
+                    .header-logo-cell {
+                        width: 12%;
+                        vertical-align: middle;
+                        padding-bottom: 12pt;
+                    }
+                    .header-title-cell {
+                        width: 53%;
+                        vertical-align: middle;
+                        padding-bottom: 12pt;
+                        padding-left: 10pt;
+                    }
+                    .header-meta-cell {
+                        width: 35%;
+                        vertical-align: middle;
+                        text-align: right;
+                        padding-bottom: 12pt;
+                        font-size: 8.5pt;
+                        color: #64748b;
+                        font-family: 'Consolas', monospace;
+                    }
+                    .title-primary {
+                        font-size: 20pt;
+                        font-weight: bold;
+                        color: #0f172a;
+                        margin: 0;
+                    }
+                    .title-secondary {
+                        font-size: 11pt;
+                        color: #0d9488;
+                        font-weight: 600;
+                        margin: 2pt 0 0 0;
+                    }
+                    .main-heading {
+                        font-size: 15pt;
+                        font-weight: bold;
+                        color: #0f172a;
+                        margin-top: 0;
+                        margin-bottom: 18pt;
+                        border-bottom: 1px solid #e2e8f0;
+                        padding-bottom: 6pt;
+                    }
+                    .card {
+                        margin-bottom: 16pt;
+                        padding: 14pt;
+                        border-radius: 8px;
+                        border: 1px solid #e2e8f0;
+                    }
+                    .user-card {
+                        background-color: #f8fafc;
+                        border-left: 5px solid #64748b;
+                    }
+                    .ai-card {
+                        background-color: #f0fdfa;
+                        border-left: 5px solid #0d9488;
+                    }
+                    .sender-title {
+                        font-size: 9.5pt;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        letter-spacing: 0.8px;
+                        margin-bottom: 4pt;
+                    }
+                    .timestamp-meta {
+                        font-size: 8.5pt;
+                        color: #94a3b8;
+                        font-family: 'Consolas', monospace;
+                        margin-bottom: 8pt;
+                        display: block;
+                    }
+                    .user-title {
+                        color: #475569;
+                    }
+                    .ai-title {
+                        color: #0d9488;
+                    }
+                    .content {
+                        font-size: 11pt;
+                        color: #334155;
+                    }
+                    p {
+                        margin: 0 0 8pt 0;
+                    }
+                    ul, ol {
+                        margin: 0 0 8pt 0;
+                        padding-left: 20pt;
+                    }
+                    li {
+                        margin-bottom: 4pt;
+                    }
+                    strong {
+                        color: #0f172a;
+                        font-weight: bold;
+                    }
+                    pre {
+                        background-color: #0f172a;
+                        color: #f8fafc;
+                        padding: 10pt;
+                        border-radius: 6px;
+                        font-family: 'Consolas', 'Courier New', monospace;
+                        font-size: 9.5pt;
+                        margin: 10pt 0;
+                    }
+                    code {
+                        background-color: #f1f5f9;
+                        color: #0d9488;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                        font-family: 'Consolas', monospace;
+                        font-size: 10pt;
+                    }
+                    .footer {
+                        margin-top: 35pt;
+                        border-top: 1px solid #e2e8f0;
+                        padding-top: 10pt;
+                        font-size: 8.5pt;
+                        color: #94a3b8;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                <table class="header-table">
+                    <tr>
+                        <td class="header-logo-cell">
+                            <img src="https://upload.wikimedia.org/wikipedia/id/thumb/7/73/Lambang_Universitas_Negeri_Malang.jpg/1280px-Lambang_Universitas_Negeri_Malang.jpg?_=20171123143359" width="48" height="48" style="object-fit: contain; border-radius: 50%;" alt="Logo UM">
+                        </td>
+                        <td class="header-title-cell">
+                            <div class="title-primary">Cakra-Ai <span style="font-size: 14pt; color: #0d9488;">Lite</span></div>
+                            <div class="title-secondary">Asisten Pintar Media & Dokumen Universitas Negeri Malang</div>
+                        </td>
+                        <td class="header-meta-cell">
+                            Tanggal Unduh: ${formattedDate}<br>
+                            Lisensi: Sesi Pengguna Mandiri
+                        </td>
+                    </tr>
+                </table>
+                
+                ${bodyContent}
+                
+                <div class="footer">
+                    Laporan ini dibuat dan diekspor secara otomatis melalui aplikasi Cakra-Ai Lite.<br>
+                    © ${new Date().getFullYear()} Universitas Negeri Malang. All Rights Reserved.
+                </div>
+            </body>
+            </html>`;
+        }
+
+        function downloadMessage(messageId) {
+            const wrapper = document.getElementById(messageId);
+            if (!wrapper) return;
+
+            const isUser = wrapper.querySelector('.bg-gradient-to-tr') !== null;
+            const originalText = wrapper.getAttribute('data-original-text') || wrapper.querySelector('.prose-container').innerText;
+            const parsedTextHtml = parseMarkdown(originalText);
+            const timeStampStr = wrapper.getAttribute('data-timestamp') || getFormattedTimestamp();
+
+            const senderName = isUser ? "Anda (Pengguna)" : "Cakra-Ai";
+            const cardClass = isUser ? "user-card" : "ai-card";
+            const labelClass = isUser ? "user-title" : "ai-title";
+
+            const bodyContent = `
+                <div class="main-heading">Laporan Ekspor Pesan Tunggal</div>
+                <div class="card ${cardClass}">
+                    <div class="sender-title ${labelClass}">${senderName}</div>
+                    <span class="timestamp-meta">Tercatat: ${timeStampStr}</span>
+                    <div class="content">${parsedTextHtml}</div>
+                </div>
+            `;
+
+            const fullDocHtml = getWordDocWrapper(bodyContent, `Cakra-Ai-Pesan-${messageId}`);
+            
+            const blob = new Blob([fullDocHtml], { type: 'application/msword;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Cakra-Ai-Pesan-${messageId}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast("Pesan berhasil diunduh sebagai Word Document (.doc)!", "success");
+        }
+
+        function downloadEntireChat() {
+            const messages = document.querySelectorAll('#chat-messages-container > div');
+            if (messages.length === 0 || (messages.length === 1 && messages[0].id === 'welcome-message-view')) { 
+                showToast("Belum ada sesi obrolan diskusi yang dapat diekspor!", "error");
+                return;
+            }
+
+            let bodyContent = `<div class="main-heading">Riwayat Lengkap Sesi Diskusi Belajar</div>`;
+
+            messages.forEach(msg => {
+                if (msg.id === 'welcome-message-view') return;
+
+                const isUser = msg.querySelector('.bg-gradient-to-tr') !== null;
+                const senderName = isUser ? "Anda" : "Cakra-Ai";
+                const cardClass = isUser ? "user-card" : "ai-card";
+                const labelClass = isUser ? "user-title" : "ai-title";
+                const originalText = msg.getAttribute('data-original-text') || msg.querySelector('.prose-container')?.innerText || '';
+                const parsedTextHtml = parseMarkdown(originalText);
+                const timeStampStr = msg.getAttribute('data-timestamp') || getFormattedTimestamp();
+
+                bodyContent += `
+                    <div class="card ${cardClass}">
+                        <div class="sender-title ${labelClass}">${senderName}</div>
+                        <span class="timestamp-meta">Tercatat: ${timeStampStr}</span>
+                        <div class="content">${parsedTextHtml}</div>
+                    </div>
+                `;
+            });
+
+            const fullDocHtml = getWordDocWrapper(bodyContent, "Laporan Lengkap Diskusi Cakra-Ai");
+
+            const blob = new Blob([fullDocHtml], { type: 'application/msword;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Cakra-Ai-Diskusi-Lengkap-${Date.now()}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast("Seluruh diskusi berhasil diunduh sebagai Word Document (.doc)!", "success");
+        }
+
+        async function copyToClipboard(messageId) {
             const wrapper = document.getElementById(messageId);
             const originalText = wrapper.getAttribute('data-original-text') || wrapper.querySelector('.prose-container').innerText;
             
@@ -1232,43 +1473,36 @@ ${contextText}`;
             const wrapper = document.getElementById(messageId);
             const textToRead = wrapper.getAttribute('data-original-text') || wrapper.querySelector('.prose-container').innerText;
             
-            // Bersihkan teks dari Markdown/Formatting agar pelafalan suara lancar
             const cleanText = textToRead.replace(/[*#`_\-]/g, '').trim();
 
             if (!cleanText) return;
 
-            // TOGGLE OFF: Jika diklik kembali pada gelembung pesan yang SAMA yang sedang berbunyi/loading
+            // Jika mengklik gelembung yang sama ketika sedang bersuara, matikan seketika (Toggle Off)
             if (state.currentPlayingId === messageId) {
                 stopAudioPlayback();
                 return;
             }
 
-            // Matikan suara apa pun yang sedang diputar sebelum memulai yang baru
+            // Hentikan pemutaran audio sebelumnya
             stopAudioPlayback();
-
-            // Setel target ID audio yang sedang aktif
             state.currentPlayingId = messageId;
 
-            // Ubah tombol speaker menjadi mode Loading (Spinner)
             const speakerIcon = wrapper.querySelector('.speaker-icon');
             if (speakerIcon) {
                 speakerIcon.className = 'fa-solid fa-spinner animate-spin text-sm text-teal-600';
             }
 
-            // Tampilkan visualizer gelombang equalizer di gelembung aktif
             const targetWave = wrapper.querySelector('.eq-waves');
             if (targetWave) {
                 targetWave.classList.remove('hidden');
                 targetWave.classList.add('flex');
             }
 
-            // Munculkan Bar Status Audio Global di bagian bawah
             const playbackBar = document.getElementById('audio-playback-bar');
             const statusText = document.getElementById('audio-status-text');
             playbackBar.classList.remove('hidden');
             statusText.textContent = "Menghubungi Server Suara Premium...";
 
-            // Periksa ketersediaan API key untuk Gemini TTS Premium
             if (!state.activeApiKey) {
                 statusText.textContent = "Menggunakan Suara Default Lokal (Tidak Ada API Key)";
                 if (state.currentPlayingId === messageId) {
@@ -1278,9 +1512,7 @@ ${contextText}`;
             }
 
             try {
-                // Melakukan panggil API ke model gemini-2.5-flash-preview-tts
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.activeApiKey}`;
-                
                 const promptVoice = `Katakan dengan nada informatif, ramah, dan artikulasi jelas: ${cleanText}`;
 
                 const payload = {
@@ -1303,9 +1535,8 @@ ${contextText}`;
                     body: JSON.stringify(payload)
                 });
 
-                // Cek Kembali: Apakah pengguna mematikan audio saat fetch sedang berlangsung?
                 if (state.currentPlayingId !== messageId) {
-                    return; // Batalkan eksekusi audio jika dibatalkan di tengah proses
+                    return; // Mengantisipasi user membatalkan di tengah proses loading
                 }
 
                 if (!response.ok) {
@@ -1320,25 +1551,21 @@ ${contextText}`;
                 if (base64Audio && mimeType && mimeType.startsWith("audio/")) {
                     statusText.textContent = `Sedang bersuara (${state.selectedVoice})...`;
                     
-                    // Ubah tombol speaker menjadi mode "Bisukan/Stop" (Ikon Mute X)
                     if (speakerIcon) {
                         speakerIcon.className = 'fa-solid fa-volume-xmark text-sm text-rose-600';
                     }
 
-                    // Ekstrak Sampel Rate dari mimeType (contoh: "audio/L16;rate=24000")
                     let sampleRate = 24000;
                     const rateMatch = mimeType.match(/rate=(\d+)/);
                     if (rateMatch) {
                         sampleRate = parseInt(rateMatch[1], 10);
                     }
 
-                    // Decode base64 PCM16 ke WAV Blob
                     const pcmDataBuffer = base64ToArrayBuffer(base64Audio);
                     const pcm16Array = new Int16Array(pcmDataBuffer);
                     const wavBlob = pcmToWav(pcm16Array, sampleRate);
                     const audioUrl = URL.createObjectURL(wavBlob);
 
-                    // Putar Audio
                     state.audioPlayer = new Audio(audioUrl);
                     state.audioPlayer.play();
                     
@@ -1355,7 +1582,6 @@ ${contextText}`;
                 console.warn("Kesalahan TTS Premium:", error);
                 statusText.textContent = "Gagal memuat Suara Premium. Beralih ke Web Speech...";
                 
-                // Gunakan native speechSynthesis browser sebagai backup jika API key eror atau melampaui limit
                 if (state.currentPlayingId === messageId) {
                     speakWithNativeSpeechSynthesis(cleanText, messageId);
                 }
@@ -1369,10 +1595,8 @@ ${contextText}`;
                 return;
             }
 
-            // Keamanan asinkron: pastikan ID masih sesuai sebelum mulai bersuara
             if (state.currentPlayingId !== messageId) return;
 
-            // Ubah tombol speaker menjadi mode "Bisukan/Stop" (Ikon Mute X)
             const wrapper = document.getElementById(messageId);
             if (wrapper) {
                 const speakerIcon = wrapper.querySelector('.speaker-icon');
@@ -1382,8 +1606,8 @@ ${contextText}`;
             }
 
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'id-ID'; // Mengatur pengucapan Bahasa Indonesia
-            utterance.rate = 1.0;     // Kecepatan normal pembacaan
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.0;
 
             utterance.onend = function() {
                 if (state.currentPlayingId === messageId) {
@@ -1398,23 +1622,19 @@ ${contextText}`;
             };
 
             window.speechSynthesis.speak(utterance);
-            
-            // Simpan referensi ke player buatan
             state.audioPlayer = window.speechSynthesis;
         }
 
+        // Hentikan pemutaran audio di seluruh bagian
         function stopAudioPlayback() {
-            // 1. Bersihkan animasi equalizer dan kembalikan ikon speaker pada gelembung pesan yang sedang aktif
             if (state.currentPlayingId) {
                 const activeWrapper = document.getElementById(state.currentPlayingId);
                 if (activeWrapper) {
-                    // Sembunyikan wave equalizer
                     const targetWave = activeWrapper.querySelector('.eq-waves');
                     if (targetWave) {
                         targetWave.classList.add('hidden');
                         targetWave.classList.remove('flex');
                     }
-                    // Kembalikan ikon speaker ke kondisi normal
                     const speakerIcon = activeWrapper.querySelector('.speaker-icon');
                     if (speakerIcon) {
                         speakerIcon.className = 'fa-solid fa-volume-high text-sm';
@@ -1423,7 +1643,6 @@ ${contextText}`;
                 state.currentPlayingId = null;
             }
 
-            // 2. Hentikan Audio Player HTML5
             if (state.audioPlayer) {
                 if (typeof state.audioPlayer.pause === 'function') {
                     state.audioPlayer.pause();
@@ -1431,15 +1650,14 @@ ${contextText}`;
                 state.audioPlayer = null;
             }
 
-            // 3. Hentikan Window SpeechSynthesis jika sedang berbicara secara native luring
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
             }
 
-            // 4. Sembunyikan player bar audio global
             document.getElementById('audio-playback-bar').classList.add('hidden');
         }
 
+        // Konverter PCM biner ke WAV 16-bit
         function base64ToArrayBuffer(base64) {
             const binaryString = window.atob(base64);
             const len = binaryString.length;
@@ -1454,22 +1672,20 @@ ${contextText}`;
             const buffer = new ArrayBuffer(44 + pcm16Data.length * 2);
             const view = new DataView(buffer);
 
-            // Tulis RIFF Header
             writeString(view, 0, 'RIFF');
             view.setUint32(4, 36 + pcm16Data.length * 2, true);
             writeString(view, 8, 'WAVE');
             writeString(view, 12, 'fmt ');
             view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true); // Format PCM biasa (Linear)
-            view.setUint16(22, 1, true); // Jumlah Channel (Mono)
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
             view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * 2, true); // Byte rate
-            view.setUint16(32, 2, true); // Alignment block
-            view.setUint16(34, 16, true); // Bit Depth (16-bit)
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
             writeString(view, 36, 'data');
             view.setUint32(40, pcm16Data.length * 2, true);
 
-            // Masukkan Audio data
             for (let i = 0; i < pcm16Data.length; i++) {
                 view.setInt16(44 + i * 2, pcm16Data[i], true);
             }

@@ -395,6 +395,31 @@
         </div>
     </div>
 
+    <!-- Modal Lihat Sumber -->
+    <div id="view-source-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-all flex flex-col max-h-[85vh]">
+            <div class="bg-teal-900 p-4 text-white flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-sm flex items-center gap-2" id="view-source-title-modal">
+                    <i class="fa-solid fa-eye text-teal-400"></i> Detail Sumber
+                </h3>
+                <button onclick="toggleViewSourceModal(false)" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4" id="view-source-body-modal">
+                <!-- Konten dinamis akan disisipkan di sini -->
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex space-x-2 shrink-0">
+                <button id="copy-source-btn" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Salin Isi Sumber
+                </button>
+                <button onclick="toggleViewSourceModal(false)" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 rounded-lg text-xs transition-all">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar -->
     <div id="mobile-sidebar" class="fixed inset-y-0 left-0 w-80 bg-white z-40 transform -translate-x-full transition-transform duration-300 md:hidden shadow-2xl flex flex-col">
         <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
@@ -742,11 +767,11 @@ Petunjuk Penggunaan Fitur:
 
                 htmlContent += `
                     <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl transition-all group">
-                        <div class="flex items-center space-x-2.5 overflow-hidden flex-1 mr-2">
+                        <div onclick="viewSource('${src.id}')" class="flex items-center space-x-2.5 overflow-hidden flex-1 mr-2 cursor-pointer hover:text-teal-600 transition-all" title="Klik untuk melihat isi sumber">
                             <div class="shrink-0 flex items-center justify-center w-6 h-6">
                                 ${icon}
                             </div>
-                            <span class="text-xs font-semibold text-slate-700 truncate w-full" title="${src.title}">${src.title}</span>
+                            <span class="text-xs font-semibold text-slate-700 truncate w-full group-hover:text-teal-600 transition-colors" title="${src.title}">${src.title}</span>
                         </div>
                         <button onclick="deleteSource('${src.id}')" class="p-1 text-slate-400 hover:text-rose-600 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100">
                             <i class="fa-solid fa-trash-can text-xs"></i>
@@ -757,6 +782,75 @@ Petunjuk Penggunaan Fitur:
 
             listContainer.innerHTML = htmlContent;
             mobileContainer.innerHTML = htmlContent || '<p class="text-xs text-slate-400 text-center py-6">Belum ada dokumen sumber.</p>';
+        }
+
+        function toggleViewSourceModal(show) {
+            const modal = document.getElementById('view-source-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function viewSource(id) {
+            const src = state.sources.find(s => s.id === id);
+            if (!src) return;
+
+            const titleEl = document.getElementById('view-source-title-modal');
+            const bodyEl = document.getElementById('view-source-body-modal');
+            const copyBtn = document.getElementById('copy-source-btn');
+
+            let typeBadge = '';
+            let contentHtml = '';
+
+            if (src.type === 'pdf') {
+                typeBadge = '<span class="px-2 py-0.5 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-full border border-rose-100">PDF</span>';
+                contentHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
+                        <span>Tipe berkas: <strong>PDF Document (Teks Terpeta)</strong></span>
+                        <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
+                    </div>
+                    <div class="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>
+                `;
+                copyBtn.style.display = 'flex';
+                copyBtn.onclick = () => copyTextToClipboardDirect(src.content);
+            } else if (src.type === 'image') {
+                typeBadge = '<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full border border-blue-100">Gambar</span>';
+                contentHtml = `
+                    <div class="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl gap-3">
+                        <img src="data:${src.mimeType};base64,${src.base64}" class="max-h-64 md:max-h-80 object-contain rounded-lg border border-slate-200 shadow-sm" alt="${src.title}">
+                        <div class="text-[11px] text-slate-400 font-mono text-center">${src.title} (${src.mimeType})</div>
+                    </div>
+                `;
+                copyBtn.style.display = 'none';
+            } else {
+                typeBadge = '<span class="px-2 py-0.5 bg-teal-50 text-teal-600 text-[10px] font-bold rounded-full border border-teal-100">Teks</span>';
+                contentHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
+                        <span>Tipe berkas: <strong>Dokumen Teks / Notulen</strong></span>
+                        <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
+                    </div>
+                    <div class="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>
+                `;
+                copyBtn.style.display = 'flex';
+                copyBtn.onclick = () => copyTextToClipboardDirect(src.content);
+            }
+
+            titleEl.innerHTML = `<i class="fa-solid fa-eye text-teal-400"></i> ${src.title} ${typeBadge}`;
+            bodyEl.innerHTML = contentHtml;
+
+            toggleViewSourceModal(true);
+        }
+
+        function copyTextToClipboardDirect(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Isi dokumen sumber berhasil disalin ke clipboard!", "success");
         }
 
         function initSpeechRecognition() {

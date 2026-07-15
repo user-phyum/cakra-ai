@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     
     <style>
         body {
@@ -104,7 +106,7 @@
                     <label class="flex flex-col items-center justify-center py-2.5 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 hover:border-teal-500 transition-all text-center" title="Unggah File">
                         <i class="fa-solid fa-cloud-arrow-up text-teal-600 text-base mb-1"></i>
                         <span class="text-[10px] font-semibold text-slate-700">Unggah File</span>
-                        <input id="file-uploader" type="file" multiple class="hidden" accept=".txt,.md,.pdf,image/*">
+                        <input id="file-uploader" type="file" multiple class="hidden" accept=".txt,.md,.pdf,.xls,.xlsx,.doc,.docx,image/*">
                     </label>
                     <button onclick="openAddTextModal()" class="flex flex-col items-center justify-center py-2.5 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Tulis Teks">
                         <i class="fa-solid fa-file-signature text-blue-600 text-base mb-1"></i>
@@ -115,7 +117,7 @@
                         <span class="text-[10px] font-semibold text-slate-700">Rekam Suara</span>
                     </button>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2 text-center">Mendukung PDF, Gambar, TXT, & Rekaman Suara</p>
+                <p class="text-[10px] text-slate-400 mt-2 text-center">Mendukung PDF, Word, Excel, Gambar, TXT, & Rekaman Suara</p>
             </div>
 
             <div id="sources-list" class="flex-1 overflow-y-auto p-4 space-y-2">
@@ -534,7 +536,7 @@
                 <label class="flex flex-col items-center justify-center py-2 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-white hover:bg-slate-50 text-center">
                     <i class="fa-solid fa-cloud-arrow-up text-teal-600 text-sm mb-1"></i>
                     <span class="text-[9px] font-semibold text-slate-700">Unggah File</span>
-                    <input id="file-uploader-mobile" type="file" multiple class="hidden" accept=".txt,.md,.pdf,image/*">
+                    <input id="file-uploader-mobile" type="file" multiple class="hidden" accept=".txt,.md,.pdf,.xls,.xlsx,.doc,.docx,image/*">
                 </label>
                 <button onclick="toggleMobileSidebar(); openAddTextModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-center">
                     <i class="fa-solid fa-file-signature text-blue-600 text-sm mb-1"></i>
@@ -844,6 +846,7 @@ Petunjuk Penggunaan Fitur:
             for (let file of files) {
                 const fileType = file.type;
                 const fileName = file.name;
+                const fileExtension = fileName.split('.').pop().toLowerCase();
                 const sourceId = 'src-' + Date.now() + Math.random().toString(36).substr(2, 5);
                 
                 showToast(`Memproses berkas: ${fileName}...`);
@@ -851,7 +854,10 @@ Petunjuk Penggunaan Fitur:
                 const placeholderSource = {
                     id: sourceId,
                     title: fileName + ' (Memproses...)',
-                    type: fileType.startsWith('image/') ? 'image' : (fileType === 'application/pdf' ? 'pdf' : 'text'),
+                    type: fileType.startsWith('image/') ? 'image' : 
+                          (fileType === 'application/pdf' || fileExtension === 'pdf' ? 'pdf' : 
+                          (['xlsx', 'xls'].includes(fileExtension) ? 'excel' : 
+                          (['docx', 'doc'].includes(fileExtension) ? 'word' : 'text'))),
                     content: 'Sedang membaca dan mengekstrak isi dokumen...'
                 };
                 state.sources.push(placeholderSource);
@@ -897,7 +903,7 @@ Petunjuk Penggunaan Fitur:
                                 
                                 let ocrExtractedText = "";
                                 for (let i = 1; i <= pdf.numPages; i++) {
-                                    showToast(`Memproses OCR Halaman ${i} dari ${pdf.numPages}...`);
+                                    showToast("Memproses OCR Halaman " + i + " dari " + pdf.numPages + "...");
                                     const page = await pdf.getPage(i);
                                     const viewport = page.getViewport({ scale: 1.5 });
                                     const canvas = document.createElement('canvas');
@@ -925,6 +931,91 @@ Petunjuk Penggunaan Fitur:
                     };
                     reader.readAsArrayBuffer(file);
                 } 
+                else if (['xlsx', 'xls'].includes(fileExtension)) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        try {
+                            const data = new Uint8Array(event.target.result);
+                            if (typeof XLSX === 'undefined') {
+                                throw new Error("Pustaka Excel (SheetJS) belum termuat sempurna.");
+                            }
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            let extractedText = "";
+                            
+                            workbook.SheetNames.forEach(sheetName => {
+                                extractedText += `=== Lembar Kerja: ${sheetName} ===\n`;
+                                const sheet = workbook.Sheets[sheetName];
+                                const csvData = XLSX.utils.sheet_to_csv(sheet);
+                                if (csvData.trim()) {
+                                    extractedText += csvData + "\n\n";
+                                } else {
+                                    extractedText += "[Lembar kosong]\n\n";
+                                }
+                            });
+                            
+                            updateSourceContent(sourceId, fileName, extractedText.trim());
+                            showToast(`Berkas Excel "${fileName}" berhasil ditambahkan!`, "success");
+                        } catch (err) {
+                            console.error(err);
+                            showToast(`Gagal membaca Excel: ${err.message || err}`, "error");
+                            updateSourceContent(sourceId, fileName + ' [Gagal]', `[⚠️ Gagal membaca berkas Excel.\nDetail Galat: ${err.message || err}]`);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                else if (['docx', 'doc'].includes(fileExtension)) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        if (fileExtension === 'docx') {
+                            if (typeof mammoth === 'undefined') {
+                                showToast("Pustaka Word (mammoth) belum termuat sempurna.", "error");
+                                updateSourceContent(sourceId, fileName + ' [Gagal]', "[⚠️ Pustaka Mammoth.js tidak terdeteksi]");
+                                return;
+                            }
+                            mammoth.extractRawText({ arrayBuffer: event.target.result })
+                                .then(function(result) {
+                                    const text = result.value;
+                                    if (text.trim()) {
+                                        updateSourceContent(sourceId, fileName, text.trim());
+                                        showToast(`Dokumen Word "${fileName}" berhasil diekstrak!`, "success");
+                                    } else {
+                                        throw new Error("Dokumen Word tidak berisi tulisan teks.");
+                                    }
+                                })
+                                .catch(function(err) {
+                                    console.error(err);
+                                    showToast(`Gagal mengekstrak Word: ${err.message || err}`, "error");
+                                    updateSourceContent(sourceId, fileName + ' [Gagal]', `[⚠️ Gagal membaca berkas Word .docx.\nDetail: ${err.message || err}]`);
+                                });
+                        } else {
+                            try {
+                                const arrayBuffer = event.target.result;
+                                const view = new DataView(arrayBuffer);
+                                let extractedText = "";
+                                for (let i = 0; i < view.byteLength; i++) {
+                                    const charCode = view.getUint8(i);
+                                    if ((charCode >= 32 && charCode <= 126) || charCode === 10 || charCode === 13 || (charCode >= 192 && charCode <= 255)) {
+                                        extractedText += String.fromCharCode(charCode);
+                                    }
+                                }
+                                let cleanedText = extractedText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "")
+                                                                .replace(/\s+/g, " ")
+                                                                .trim();
+                                
+                                if (cleanedText.length > 50) {
+                                    updateSourceContent(sourceId, fileName, `[⚠️ Berkas .doc versi lawas dikonversi ke teks mentah]\n\n` + cleanedText);
+                                    showToast(`Dokumen .doc lawas "${fileName}" berhasil diekstrak sebagai teks mentah!`, "success");
+                                } else {
+                                    throw new Error("Gagal membaca struktur berkas .doc lawas.");
+                                }
+                            } catch (err) {
+                                updateSourceContent(sourceId, fileName + ' [Gagal]', `⚠️ Berkas Word .doc (Word 97-2003) versi lawas tidak didukung langsung di peramban.\n\nSilakan konversi berkas ini ke format .docx (Microsoft Word Modern) terlebih dahulu agar Cakra-Ai dapat mengekstrak seluruh teks secara presisi.`);
+                                showToast(`Format .doc lawas memerlukan konversi ke .docx!`, "error");
+                            }
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
                 else if (fileType.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = function(event) {
@@ -1012,6 +1103,10 @@ Petunjuk Penggunaan Fitur:
                     icon = '<i class="fa-solid fa-spinner animate-spin text-teal-500 text-sm"></i>';
                 } else if (src.type === 'pdf') {
                     icon = '<i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>';
+                } else if (src.type === 'excel') {
+                    icon = '<i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i>';
+                } else if (src.type === 'word') {
+                    icon = '<i class="fa-solid fa-file-word text-blue-600 text-sm"></i>';
                 } else if (src.type === 'image') {
                     if (src.base64 && src.mimeType) {
                         icon = `<img src="data:${src.mimeType};base64,${src.base64}" class="w-6 h-6 rounded object-cover border border-slate-200 shadow-sm" alt="Thumbnail">`;
@@ -1064,6 +1159,28 @@ Petunjuk Penggunaan Fitur:
                 contentHtml = `
                     <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
                         <span>Tipe berkas: <strong>PDF Document (Teks Terpeta)</strong></span>
+                        <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
+                    </div>
+                    <div class="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>
+                `;
+                copyBtn.style.display = 'flex';
+                copyBtn.onclick = () => copyTextToClipboardDirect(src.content);
+            } else if (src.type === 'excel') {
+                typeBadge = '<span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-100">Excel</span>';
+                contentHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
+                        <span>Tipe berkas: <strong>Microsoft Excel Worksheet (.xlsx/.xls)</strong></span>
+                        <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
+                    </div>
+                    <div class="whitespace-pre-wrap font-mono text-xs text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>
+                `;
+                copyBtn.style.display = 'flex';
+                copyBtn.onclick = () => copyTextToClipboardDirect(src.content);
+            } else if (src.type === 'word') {
+                typeBadge = '<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full border border-blue-100">Word</span>';
+                contentHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
+                        <span>Tipe berkas: <strong>Microsoft Word Document (.docx/.doc)</strong></span>
                         <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
                     </div>
                     <div class="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>

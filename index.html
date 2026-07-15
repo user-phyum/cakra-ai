@@ -41,6 +41,13 @@
             0%, 100% { height: 4px; }
             50% { height: 14px; }
         }
+
+        .speech-word {
+            display: inline-block;
+            transition: all 0.12s ease-in-out;
+            border-radius: 3px;
+            padding: 0 1px;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col h-screen overflow-hidden">
@@ -189,11 +196,14 @@
                         <i class="fa-solid fa-waveform"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold text-slate-800">Sedang Membaca Jawaban...</p>
-                        <p class="text-[10px] text-slate-500" id="audio-status-text">Memproses Audio Premium Cakra-Ai</p>
+                        <p class="text-xs font-semibold text-slate-800" id="audio-title-text">Sedang Membaca Jawaban...</p>
+                        <p class="text-[10px] text-teal-600 font-medium" id="audio-status-text">Memproses Audio Premium Cakra-Ai</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <button id="fallback-local-btn" onclick="forceLocalFallback()" class="hidden px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold transition-all shadow-sm">
+                        <i class="fa-solid fa-person-running"></i> Gunakan Suara Lokal
+                    </button>
                     <button onclick="stopAudioPlayback()" class="px-3 py-1.5 bg-rose-600 text-white rounded text-xs font-medium hover:bg-rose-700 transition-all flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-circle-stop"></i> Berhenti
                     </button>
@@ -249,7 +259,6 @@
                 </button>
             </div>
             <div class="p-5 space-y-4 overflow-y-auto flex-1">
-                <!-- Akordeon Panduan API Key -->
                 <button onclick="toggleTutorial()" class="w-full text-left bg-teal-50 hover:bg-teal-100 text-teal-800 p-3 rounded-lg border border-teal-200 text-xs font-semibold flex justify-between items-center transition-all" title="Klik untuk membaca cara membuat API Key">
                     <span class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-question text-teal-600 text-sm"></i>
@@ -258,7 +267,6 @@
                     <i id="tutorial-chevron" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
                 </button>
 
-                <!-- Konten Panduan yang Dapat Dilipat -->
                 <div id="tutorial-content" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs space-y-3 max-h-60 overflow-y-auto leading-relaxed">
                     <div class="font-bold text-slate-800 border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-book-open text-teal-600"></i> Panduan Pembuatan Gemini API Key
@@ -403,7 +411,7 @@
                     <div>📥 <strong>Unduh & Ekspor:</strong> Simpan respons dan diskusi lengkap ke berkas Microsoft Word (.doc) terstruktur.</div>
                     <div>⏱️ <strong>Timestamp Presisi:</strong> Semua pesan serta rekaman suara (transkrip rapat) dilacak dengan penanda waktu riil.</div>
                 </div>
-                <p class="text-[11px] text-slate-400">Versi 1.3.5 • Dikembangkan khusus dengan Cakra-Ai.</p>
+                <p class="text-[11px] text-slate-400">Versi 1.4.0 • Dikembangkan khusus dengan Cakra-Ai.</p>
             </div>
         </div>
     </div>
@@ -420,13 +428,11 @@
             </div>
             
             <div class="p-5 space-y-4 overflow-y-auto flex-1">
-                <!-- Judul Notula -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Sumber / Rapat</label>
                     <input id="voice-doc-title" type="text" placeholder="Contoh: Hasil Rekaman Suara Cakra-Ai" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none">
                 </div>
 
-                <!-- Akordeon Panduan Rekam Zoom & Meet (Mengikuti Gaya API Key) -->
                 <button onclick="toggleVoiceTutorial()" class="w-full text-left bg-rose-50 hover:bg-rose-100 text-rose-800 p-3 rounded-lg border border-rose-200 text-xs font-semibold flex justify-between items-center transition-all" title="Klik untuk membaca cara merekam audio Zoom / Meet">
                     <span class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-question text-rose-600 text-sm"></i>
@@ -435,7 +441,6 @@
                     <i id="voice-tutorial-chevron" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
                 </button>
 
-                <!-- Konten Panduan Audio Virtual (Dapat Dilipat) -->
                 <div id="voice-tutorial-content" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs space-y-3 leading-relaxed">
                     <div class="font-bold text-slate-800 border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-headphones text-rose-600"></i> Panduan Rekam Rapat Online (Zoom & Meet)
@@ -445,7 +450,7 @@
                     <div class="space-y-3">
                         <div class="border-l-2 border-rose-500 pl-2.5">
                             <p class="font-bold text-slate-700">Metode 1: Stereo Mix (Bawaan Windows - Tanpa Aplikasi)</p>
-                            <p class="text-slate-500 mt-0.5">Aktifkan <strong>Stereo Mix</strong> di Sound Control Panel Windows (Tab Recording). Klik ikon gembok di sebelah kiri URL browser situs ini, lalu ganti izin mikrofon mengarah ke <strong>Stereo Mix</strong>. Mulai rekam, lalu jalankan rapat Zoom/Meet Anda.</p>
+                            <p class="text-slate-500 mt-0.5">Aktifkan <strong>Stereo Mix</strong> di Sound Control Panel Windows (Tab Recording). Klik izin mikrofon browser situs ini, lalu ganti izin mikrofon mengarah ke <strong>Stereo Mix</strong>. Mulai rekam, lalu jalankan rapat Zoom/Meet Anda.</p>
                         </div>
                         <div class="border-l-2 border-rose-500 pl-2.5">
                             <p class="font-bold text-slate-700">Metode 2: Virtual Audio Cable (Kualitas Jernih Maksimal)</p>
@@ -458,7 +463,6 @@
                     </div>
                 </div>
                 
-                <!-- Gelombang Visualisasi Rekaman -->
                 <div class="flex flex-col items-center justify-center py-6 border border-slate-100 bg-slate-50 rounded-xl relative overflow-hidden">
                     <div id="voice-record-wave" class="hidden flex items-end justify-center gap-1 mb-4 h-10">
                         <span class="w-1 bg-rose-500 rounded-full animate-bounce h-4"></span>
@@ -474,7 +478,6 @@
                     <p id="voice-record-status" class="text-xs text-slate-500 mt-3 font-semibold">Ketuk tombol merah di atas untuk mulai bersuara</p>
                 </div>
 
-                <!-- Textarea Penampung Transkrip -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Hasil Transkripsi Rapat Ber-Timestamp</label>
                     <textarea id="voice-doc-content" rows="6" placeholder="Hasil transkripsi rapat beserta timestamp detak waktu riil akan tercatat otomatis di sini..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono focus:border-teal-500 outline-none resize-none bg-slate-900 text-emerald-400"></textarea>
@@ -503,7 +506,7 @@
                 </button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 space-y-4" id="view-source-body-modal">
-                <!-- Konten dinamis disisipkan di sini -->
+                <!-- Konten dinamis -->
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex space-x-2 shrink-0">
                 <button id="copy-source-btn" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-2">
@@ -590,7 +593,10 @@
             selectedVoice: safeGetItem('gemini_notebook_voice', 'Puck'),
             isRecordingSource: false,
             sourceRecognition: null,
-            demoMode: false
+            demoMode: false,
+            activeTtsController: null,
+            speechToReadBackup: "",
+            animationFrameId: null // Melacak requestAnimationFrame agar tidak bocor
         };
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
@@ -604,12 +610,14 @@
             initSourceSpeechRecognition();
         };
 
-        async function callGeminiAPI(payload, systemPrompt = "") {
-            // Menggunakan urutan model produksi yang paling stabil dan cepat
-            const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+        async function callGeminiAPI(payload, systemPrompt = "", onModelChange = null) {
+            const models = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
             let lastError = null;
             
             for (let model of models) {
+                if (onModelChange) {
+                    onModelChange(model);
+                }
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${state.activeApiKey}`;
                 let callPayload = JSON.parse(JSON.stringify(payload));
                 
@@ -620,17 +628,19 @@
                 }
                 
                 try {
-                    // Panggil fungsi backoff yang telah dioptimalkan secara instan
-                    const responseText = await fetchWithExponentialBackoff(apiUrl, callPayload, 3, 1500);
+                    const responseText = await fetchWithExponentialBackoff(apiUrl, callPayload, 1, 1000);
                     if (responseText !== undefined) {
                         return responseText;
                     }
                 } catch (err) {
-                    console.warn(`Percobaan API dengan model ${model} gagal: ${err.message || err}. Mencoba model cadangan...`);
+                    console.warn(`Percobaan API dengan model ${model} gagal: ${err.message || err}.`);
                     lastError = err;
+                    if (err.message && (err.message.includes("API key not valid") || err.message.includes("INVALID_ARGUMENT") || err.message.includes("400") || err.message.includes("403"))) {
+                        break;
+                    }
                 }
             }
-            throw new Error(`Semua model Gemini gagal merespons. Kesalahan terakhir: ${lastError?.message || lastError || "Unknown Error"}`);
+            throw new Error(lastError?.message || lastError || "Gagal menghubungi API.");
         }
 
         async function performGeminiOCR(base64Image, pageNum, totalPages) {
@@ -739,6 +749,9 @@
             const container = document.getElementById('chat-messages-container');
             const welcomeView = document.getElementById('welcome-message-view');
             
+            // Hentikan suara yang sedang aktif saat riwayat chat dihapus
+            stopAudioPlayback();
+            
             if (welcomeView) {
                 welcomeView.classList.remove('hidden');
                 container.innerHTML = '';
@@ -748,8 +761,7 @@
             }
             
             state.messages = [];
-            stopAudioPlayback();
-            showToast("Sesi diskusi disetel ulang! Riwayat obrolan telah dibersihkan.", "success");
+            showToast("Sesi diskusi disetel ulang! Riwayat obrolan & pemutar suara telah dibersihkan.", "success");
         }
 
         function toggleMobileSidebar() {
@@ -875,49 +887,35 @@ Petunjuk Penggunaan Fitur:
                             
                             if (cleanedText.length < 30) {
                                 if (!state.activeApiKey) {
-                                    showToast(`PDF ini hasil scan. Lengkapi API Key untuk OCR Pintar!`, "error");
-                                    updateSourceContent(sourceId, fileName + ' [Pindai/Scan]', `[⚠️ Dokumen PDF ini terdeteksi sebagai hasil scan murni/gambar.\nCakra-Ai tidak dapat membaca teks secara langsung.\nHarap lengkapi "API Key" Anda di sudut kanan atas terlebih dahulu, kemudian unggah kembali dokumen ini untuk memicu pemrosesan OCR Pintar otomatis.]`);
+                                    showToast("PDF tampaknya berupa hasil pindaian (kosong). Hubungkan API Key untuk memproses OCR otomatis.", "error");
+                                    updateSourceContent(sourceId, fileName + ' [Pindaian - Perlu API Key]', "Dokumen ini kosong atau berupa hasil scan gambar. Silakan hubungkan Google Gemini API Key di pojok kanan atas untuk memicu pembacaan teks otomatis bertenaga Vision-AI.");
                                     return;
                                 }
                                 
-                                showToast(`Mendeteksi PDF Hasil Scan. Memulai Cakra-Ai OCR Pintar (${pdf.numPages} hal)...`, "info");
+                                showToast("PDF berupa scan gambar. Memulai proses Cakra-Ai OCR otomatis...", "info");
                                 updateSourceTitle(sourceId, fileName + ' [Sedang OCR...]');
                                 
-                                let ocrText = "";
-                                try {
-                                    for (let i = 1; i <= pdf.numPages; i++) {
-                                        if (i > 1) {
-                                            await new Promise(res => setTimeout(res, 1500));
-                                        }
-                                        showToast(`Menranskripsi Halaman ${i} dari ${pdf.numPages}...`);
-                                        const page = await pdf.getPage(i);
-                                        
-                                        const viewport = page.getViewport({ scale: 1.5 });
-                                        const canvas = document.createElement('canvas');
-                                        const context = canvas.getContext('2d');
-                                        canvas.height = viewport.height;
-                                        canvas.width = viewport.width;
-                                        
-                                        await page.render({
-                                            canvasContext: context,
-                                            viewport: viewport
-                                        }).promise;
-                                        
-                                        const base64Image = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-                                        const pageOcr = await performGeminiOCR(base64Image, i, pdf.numPages);
-                                        ocrText += `--- Halaman ${i} (Hasil OCR Cakra-Ai) ---\n${pageOcr}\n\n`;
-                                    }
+                                let ocrExtractedText = "";
+                                for (let i = 1; i <= pdf.numPages; i++) {
+                                    showToast(`Memproses OCR Halaman ${i} dari ${pdf.numPages}...`);
+                                    const page = await pdf.getPage(i);
+                                    const viewport = page.getViewport({ scale: 1.5 });
+                                    const canvas = document.createElement('canvas');
+                                    const context = canvas.getContext('2d');
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+                                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                                    const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
                                     
-                                    updateSourceContent(sourceId, fileName + ' [Hasil OCR]', ocrText);
-                                    showToast(`OCR Berhasil! PDF scan berhasil diubah menjadi teks analisis.`, "success");
-                                } catch (ocrError) {
-                                    console.error(ocrError);
-                                    showToast(`Gagal memproses OCR: ${ocrError.message || ocrError}`, "error");
-                                    updateSourceContent(sourceId, fileName + ' [Scan - Gagal OCR]', `[⚠️ Gagal melakukan OCR otomatis karena masalah API/Koneksi.\nDetail Error: ${ocrError.message || ocrError}\n\nIsi Teks Mentah (Jika ada):\n${extractedText}]`);
+                                    const pageOcrText = await performGeminiOCR(base64Image, i, pdf.numPages);
+                                    ocrExtractedText += `--- Hasil OCR Halaman ${i} ---\n${pageOcrText}\n\n`;
                                 }
+                                
+                                updateSourceContent(sourceId, fileName, ocrExtractedText);
+                                showToast("Berhasil mengekstrak teks PDF hasil scan menggunakan Cakra-Ai OCR!", "success");
                             } else {
                                 updateSourceContent(sourceId, fileName, extractedText);
-                                showToast(`Berhasil mengekstrak teks PDF!`, "success");
+                                showToast("Berhasil mengekstrak teks PDF!", "success");
                             }
                         } catch (innerError) {
                             console.error("Gagal membaca dokumen PDF:", innerError);
@@ -1383,7 +1381,9 @@ ${contextText}`;
                     }]
                 };
 
-                const responseText = await callGeminiAPI(payload, systemPrompt);
+                const responseText = await callGeminiAPI(payload, systemPrompt, (modelName) => {
+                    updateAiChatMessage(loadingMessageId, `⚡ Menghubungi mesin **${modelName}**...`, true);
+                });
                 
                 if (responseText === undefined) {
                     throw new Error("Layanan Gemini memberikan respons kosong.");
@@ -1484,18 +1484,14 @@ ${contextText}`;
                         return text;
                     }
 
-                    // Tangani respons non-OK
                     const errDetails = await response.json().catch(() => ({}));
                     const errMsg = errDetails?.error?.message || `HTTP error! status: ${response.status}`;
                     const status = response.status;
 
-                    // Deteksi Galat Klien (seperti 400 Bad Request, 403 Forbidden, 404 Not Found)
                     if (status >= 400 && status < 500 && status !== 429) {
-                        // GALAT FATAL: Tidak sah untuk dicoba kembali. Langsung lempar galat instan!
                         throw { fatal: true, message: errMsg };
                     }
 
-                    // Jika terkena batas laju (429) atau galat internal server (5xx), lakukan percobaan ulang
                     if (i === retries - 1) {
                         throw { fatal: false, message: errMsg };
                     }
@@ -1505,7 +1501,6 @@ ${contextText}`;
                     delay *= 2;
 
                 } catch (error) {
-                    // Jika galat ditandai sebagai FATAL, langsung kirim ke penampung utama tanpa menunggu perulangan
                     if (error && error.fatal) {
                         throw new Error(error.message);
                     }
@@ -1941,13 +1936,99 @@ ${contextText}`;
             showToast("Teks berhasil disalin!", "success");
         }
 
+        function prepareSpeechSpans(container) {
+            let wordIndex = 0;
+            
+            container.querySelectorAll('.speech-word').forEach(span => {
+                const textNode = document.createTextNode(span.textContent);
+                span.parentNode.replaceChild(textNode, span);
+            });
+            container.normalize();
+
+            function traverse(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.nodeValue;
+                    if (!text.trim()) return;
+                    
+                    const words = text.split(/(\s+)/);
+                    const fragment = document.createDocumentFragment();
+                    
+                    words.forEach(part => {
+                        if (/\s+/.test(part)) {
+                            fragment.appendChild(document.createTextNode(part));
+                        } else if (part.length > 0) {
+                            const span = document.createElement('span');
+                            span.className = 'speech-word';
+                            span.textContent = part;
+                            span.dataset.wordIndex = wordIndex++;
+                            fragment.appendChild(span);
+                        }
+                    });
+                    node.parentNode.replaceChild(fragment, node);
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'PRE') {
+                        const children = Array.from(node.childNodes);
+                        children.forEach(traverse);
+                    }
+                }
+            }
+            
+            traverse(container);
+            
+            const wordSpans = container.querySelectorAll('.speech-word');
+            let cleanSpokenText = "";
+            let charOffset = 0;
+            
+            wordSpans.forEach((span, index) => {
+                span.dataset.wordIndex = index;
+                span.dataset.charStart = charOffset;
+                cleanSpokenText += span.textContent + " ";
+                charOffset += span.textContent.length + 1;
+                span.dataset.charEnd = charOffset;
+            });
+            
+            return {
+                text: cleanSpokenText.trim(),
+                spans: Array.from(wordSpans)
+            };
+        }
+
+        function clearAllHighlights(container) {
+            const el = container || document;
+            el.querySelectorAll('.speech-word').forEach(word => {
+                word.className = 'speech-word';
+            });
+        }
+
+        function highlightWordByCharIndex(container, charIndex) {
+            const spans = container.querySelectorAll('.speech-word');
+            let activeIndex = -1;
+            
+            for (let i = 0; i < spans.length; i++) {
+                const start = parseInt(spans[i].dataset.charStart, 10);
+                const end = parseInt(spans[i].dataset.charEnd, 10);
+                if (charIndex >= start && charIndex <= end) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+            
+            if (activeIndex !== -1) {
+                spans.forEach((span, index) => {
+                    if (index === activeIndex) {
+                        span.className = 'speech-word bg-teal-100 text-teal-950 font-bold scale-105 px-1 shadow-sm';
+                    } else if (index < activeIndex) {
+                        span.className = 'speech-word text-slate-400';
+                    } else {
+                        span.className = 'speech-word';
+                    }
+                });
+            }
+        }
+
         async function triggerReadAloud(messageId) {
             const wrapper = document.getElementById(messageId);
-            const textToRead = wrapper.getAttribute('data-original-text') || wrapper.querySelector('.prose-container')?.innerText || '';
-            
-            const cleanText = textToRead.replace(/[*#`_\-]/g, '').trim();
-
-            if (!cleanText) return;
+            if (!wrapper) return;
 
             if (state.currentPlayingId === messageId) {
                 stopAudioPlayback();
@@ -1956,6 +2037,16 @@ ${contextText}`;
 
             stopAudioPlayback();
             state.currentPlayingId = messageId;
+
+            const container = wrapper.querySelector('.prose-container');
+            const { text: cleanText, spans: words } = prepareSpeechSpans(container);
+            
+            if (!cleanText) {
+                stopAudioPlayback();
+                return;
+            }
+            
+            state.speechToReadBackup = cleanText;
 
             const speakerIcon = wrapper.querySelector('.speaker-icon');
             if (speakerIcon) {
@@ -1970,91 +2061,204 @@ ${contextText}`;
 
             const playbackBar = document.getElementById('audio-playback-bar');
             const statusText = document.getElementById('audio-status-text');
+            const fallbackBtn = document.getElementById('fallback-local-btn');
+            
             playbackBar.classList.remove('hidden');
-            statusText.textContent = "Menghubungi Server Suara Premium...";
+            fallbackBtn.classList.remove('hidden');
 
             if (!state.activeApiKey) {
                 statusText.textContent = "Menggunakan Suara Default Lokal (Tidak Ada API Key)";
+                fallbackBtn.classList.add('hidden');
                 if (state.currentPlayingId === messageId) {
                     speakWithNativeSpeechSynthesis(cleanText, messageId);
                 }
                 return;
             }
 
-            try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.activeApiKey}`;
-                const promptVoice = `Katakan dengan nada informatif, ramah, dan artikulasi jelas: ${cleanText}`;
+            // Memetakan durasi bicara alami per kata Bahasa Indonesia secara presisi
+            let totalWeight = 0;
+            const wordWeights = [];
+            words.forEach((span) => {
+                const wordText = span.textContent;
+                let weight = wordText.length;
+                
+                // Tambahan bobot pernapasan (breathing pauses) alami pada tanda baca
+                if (wordText.endsWith('.') || wordText.endsWith('?') || wordText.endsWith('!')) {
+                    weight += 12; // Jeda antarkalimat (panjang)
+                } else if (wordText.endsWith(',') || wordText.endsWith(';') || wordText.endsWith(':')) {
+                    weight += 6;  // Jeda intonasi koma (sedang)
+                }
+                
+                totalWeight += weight;
+                wordWeights.push({
+                    span: span,
+                    cumulative: totalWeight
+                });
+            });
 
-                const payload = {
-                    contents: [{
-                        parts: [{ text: promptVoice }]
-                    }],
-                    generationConfig: {
-                        responseModalalities: ["AUDIO"],
-                        speechConfig: {
-                            voiceConfig: {
-                                prebuiltVoiceConfig: { voiceName: state.selectedVoice }
+            state.activeTtsController = new AbortController();
+
+            const ttsModels = [
+                { id: 'gemini-3.1-flash-tts-preview', label: 'Gemini 3.1 TTS' },
+                { id: 'gemini-2.5-flash-preview-tts', label: 'Gemini 2.5 TTS' }
+            ];
+
+            for (let modelObj of ttsModels) {
+                if (state.currentPlayingId !== messageId) return;
+
+                statusText.textContent = `Menghubungi Server Suara Premium (${modelObj.label})...`;
+                
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelObj.id}:generateContent?key=${state.activeApiKey}`;
+                    const promptVoice = `Katakan dengan nada informatif, ramah, dan artikulasi jelas: ${cleanText}`;
+
+                    const payload = {
+                        contents: [{
+                            parts: [{ text: promptVoice }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: {
+                                voiceConfig: {
+                                    prebuiltVoiceConfig: { voiceName: state.selectedVoice }
+                                }
                             }
                         }
-                    }
-                };
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (state.currentPlayingId !== messageId) {
-                    return; 
-                }
-
-                if (!response.ok) {
-                    throw new Error("Gagal memperoleh respons dari model TTS.");
-                }
-
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const base64Audio = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-
-                if (base64Audio && mimeType && mimeType.startsWith("audio/")) {
-                    statusText.textContent = `Sedang bersuara (${state.selectedVoice})...`;
-                    
-                    if (speakerIcon) {
-                        speakerIcon.className = 'fa-solid fa-volume-xmark text-sm text-rose-600';
-                    }
-
-                    let sampleRate = 24000;
-                    const rateMatch = mimeType.match(/rate=(\d+)/);
-                    if (rateMatch) {
-                        sampleRate = parseInt(rateMatch[1], 10);
-                    }
-
-                    const pcmDataBuffer = base64ToArrayBuffer(base64Audio);
-                    const pcm16Array = new Int16Array(pcmDataBuffer);
-                    const wavBlob = pcmToWav(pcm16Array, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-
-                    state.audioPlayer = new Audio(audioUrl);
-                    state.audioPlayer.play();
-                    
-                    state.audioPlayer.onended = () => {
-                        if (state.currentPlayingId === messageId) {
-                            stopAudioPlayback();
-                        }
                     };
-                } else {
-                    throw new Error("Konten audio tidak ditemukan pada respons API.");
-                }
 
-            } catch (error) {
-                console.warn("Kesalahan TTS Premium:", error);
-                statusText.textContent = "Gagal memuat Suara Premium. Beralih ke Web Speech...";
-                
-                if (state.currentPlayingId === messageId) {
-                    speakWithNativeSpeechSynthesis(cleanText, messageId);
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: state.activeTtsController.signal
+                    });
+
+                    if (state.currentPlayingId !== messageId) return;
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+                        throw new Error(errMsg);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (state.currentPlayingId !== messageId) return;
+
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const base64Audio = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (base64Audio && mimeType && mimeType.startsWith("audio/")) {
+                        statusText.textContent = `Sedang bersuara (${state.selectedVoice})...`;
+                        fallbackBtn.classList.add('hidden');
+                        
+                        if (speakerIcon) {
+                            speakerIcon.className = 'fa-solid fa-volume-xmark text-sm text-rose-600';
+                        }
+
+                        let sampleRate = 24000;
+                        const rateMatch = mimeType.match(/rate=(\d+)/);
+                        if (rateMatch) {
+                            sampleRate = parseInt(rateMatch[1], 10);
+                        }
+
+                        const pcmDataBuffer = base64ToArrayBuffer(base64Audio);
+                        const pcm16Array = new Int16Array(pcmDataBuffer);
+                        const wavBlob = pcmToWav(pcm16Array, sampleRate);
+                        const audioUrl = URL.createObjectURL(wavBlob);
+
+                        state.audioPlayer = new Audio(audioUrl);
+                        
+                        state.audioPlayer.onplay = () => {
+                            if (state.animationFrameId) {
+                                cancelAnimationFrame(state.animationFrameId);
+                            }
+                            
+                            let timingsScaled = false;
+                            
+                            function updateHighlight() {
+                                if (!state.audioPlayer || state.audioPlayer.paused || state.audioPlayer.ended) {
+                                    return;
+                                }
+                                
+                                const duration = state.audioPlayer.duration;
+                                if (duration && !timingsScaled) {
+                                    const scale = duration / totalEstimatedDuration;
+                                    wordTimings.forEach(t => {
+                                        t.actualStart = t.start * scale;
+                                        t.actualEnd = t.end * scale;
+                                        t.actualTotalEnd = t.totalEnd * scale;
+                                    });
+                                    timingsScaled = true;
+                                }
+                                
+                                if (timingsScaled) {
+                                    const currentTime = state.audioPlayer.currentTime;
+                                    let activeIndex = -1;
+                                    
+                                    for (let i = 0; i < wordTimings.length; i++) {
+                                        const t = wordTimings[i];
+                                        if (currentTime >= t.actualStart && currentTime <= t.actualTotalEnd) {
+                                            activeIndex = i;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    words.forEach((span, index) => {
+                                        if (index === activeIndex) {
+                                            span.className = 'speech-word bg-teal-100 text-teal-950 font-bold scale-105 px-1 shadow-sm';
+                                        } else if (index < activeIndex) {
+                                            span.className = 'speech-word text-slate-400';
+                                        } else {
+                                            span.className = 'speech-word';
+                                        }
+                                    });
+                                }
+                                
+                                state.animationFrameId = requestAnimationFrame(updateHighlight);
+                            }
+                            
+                            state.animationFrameId = requestAnimationFrame(updateHighlight);
+                        };
+
+                        state.audioPlayer.play();
+
+                        state.audioPlayer.onended = () => {
+                            if (state.currentPlayingId === messageId) {
+                                stopAudioPlayback();
+                            }
+                        };
+                        return;
+                    } else {
+                        throw new Error("Format output audio tidak valid dari respons API.");
+                    }
+
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        console.log("Permintaan suara premium dibatalkan oleh pengguna.");
+                        return;
+                    }
+                    console.warn(`Gagal memuat model TTS ${modelObj.id}:`, error.message || error);
                 }
+            }
+
+            statusText.textContent = `Peralihan otomatis ke Web Speech lokal...`;
+            fallbackBtn.classList.add('hidden');
+            if (state.currentPlayingId === messageId) {
+                speakWithNativeSpeechSynthesis(cleanText, messageId);
+            }
+        }
+
+        function forceLocalFallback() {
+            if (state.activeTtsController) {
+                state.activeTtsController.abort();
+            }
+            if (state.currentPlayingId && state.speechToReadBackup) {
+                showToast("Beralih ke suara lokal sesuai instruksi Anda.", "info");
+                document.getElementById('fallback-local-btn').classList.add('hidden');
+                document.getElementById('audio-status-text').textContent = "Menggunakan Web Speech Lokal...";
+                speakWithNativeSpeechSynthesis(state.speechToReadBackup, state.currentPlayingId);
             }
         }
 
@@ -2066,6 +2270,8 @@ ${contextText}`;
             }
 
             if (state.currentPlayingId !== messageId) return;
+
+            window.speechSynthesis.cancel();
 
             const wrapper = document.getElementById(messageId);
             if (wrapper) {
@@ -2079,13 +2285,28 @@ ${contextText}`;
             utterance.lang = 'id-ID';
             utterance.rate = 1.0;
 
+            utterance.onboundary = function(event) {
+                if (state.currentPlayingId !== messageId) return;
+                if (event.name === 'word') {
+                    const container = document.querySelector(`#${messageId} .prose-container`);
+                    if (container) {
+                        highlightWordByCharIndex(container, event.charIndex);
+                    }
+                }
+            };
+
             utterance.onend = function() {
                 if (state.currentPlayingId === messageId) {
                     stopAudioPlayback();
                 }
             };
 
-            utterance.onerror = function() {
+            utterance.onerror = function(e) {
+                if (e.error === 'interrupted' || e.error === 'canceled') {
+                    console.log("SpeechSynthesis dihentikan secara normal oleh pengguna.");
+                } else {
+                    console.error("SpeechSynthesis mengalami kesalahan nyata:", e.error || e);
+                }
                 if (state.currentPlayingId === messageId) {
                     stopAudioPlayback();
                 }
@@ -2096,6 +2317,16 @@ ${contextText}`;
         }
 
         function stopAudioPlayback() {
+            if (state.animationFrameId) {
+                cancelAnimationFrame(state.animationFrameId);
+                state.animationFrameId = null;
+            }
+
+            if (state.activeTtsController) {
+                state.activeTtsController.abort();
+                state.activeTtsController = null;
+            }
+
             if (state.currentPlayingId) {
                 const activeWrapper = document.getElementById(state.currentPlayingId);
                 if (activeWrapper) {
@@ -2108,6 +2339,7 @@ ${contextText}`;
                     if (speakerIcon) {
                         speakerIcon.className = 'fa-solid fa-volume-high text-sm';
                     }
+                    clearAllHighlights(activeWrapper);
                 }
                 state.currentPlayingId = null;
             }
@@ -2124,6 +2356,7 @@ ${contextText}`;
             }
 
             document.getElementById('audio-playback-bar').classList.add('hidden');
+            document.getElementById('fallback-local-btn').classList.add('hidden');
         }
 
         function base64ToArrayBuffer(base64) {

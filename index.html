@@ -102,22 +102,26 @@
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-1.5">
-                    <label class="flex flex-col items-center justify-center py-2.5 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 hover:border-teal-500 transition-all text-center" title="Unggah File">
+                <div class="grid grid-cols-2 gap-1.5">
+                    <label class="flex flex-col items-center justify-center py-2 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 hover:border-teal-500 transition-all text-center" title="Unggah File">
                         <i class="fa-solid fa-cloud-arrow-up text-teal-600 text-base mb-1"></i>
                         <span class="text-[10px] font-semibold text-slate-700">Unggah File</span>
                         <input id="file-uploader" type="file" multiple class="hidden" accept=".txt,.md,.pdf,.xls,.xlsx,.doc,.docx,image/*">
                     </label>
-                    <button onclick="openAddTextModal()" class="flex flex-col items-center justify-center py-2.5 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Tulis Teks">
+                    <button onclick="openAddTextModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Tulis Teks">
                         <i class="fa-solid fa-file-signature text-blue-600 text-base mb-1"></i>
                         <span class="text-[10px] font-semibold text-slate-700">Tulis Teks</span>
                     </button>
-                    <button onclick="openRecordVoiceModal()" class="flex flex-col items-center justify-center py-2.5 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Rekam Suara">
+                    <button onclick="openRecordVoiceModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Rekam Suara">
                         <i class="fa-solid fa-microphone-lines text-rose-600 text-base mb-1"></i>
                         <span class="text-[10px] font-semibold text-slate-700">Rekam Suara</span>
                     </button>
+                    <button onclick="openAddLinkModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 text-center transition-all" title="Tambah Link Website">
+                        <i class="fa-solid fa-globe text-amber-600 text-base mb-1"></i>
+                        <span class="text-[10px] font-semibold text-slate-700">Tambah Link</span>
+                    </button>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2 text-center">Mendukung PDF, Word, Excel, Gambar, TXT, & Rekaman Suara</p>
+                <p class="text-[10px] text-slate-400 mt-2 text-center">Mendukung PDF, Word, Excel, Gambar, TXT, Link Web & Suara</p>
             </div>
 
             <div id="sources-list" class="flex-1 overflow-y-auto p-4 space-y-2">
@@ -393,6 +397,39 @@
         </div>
     </div>
 
+    <!-- Tambah Link Modal -->
+    <div id="add-link-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-all">
+            <div class="bg-slate-900 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-globe text-amber-400"></i> Tambah Sumber Link Website / Berita
+                </h3>
+                <button onclick="toggleAddLinkModal(false)" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat URL Website / Artikel Berita</label>
+                    <input id="new-link-url" type="url" placeholder="https://news.detik.com/... atau https://kompas.com/..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-teal-500 outline-none">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-[11px] text-slate-500 space-y-1">
+                    <p class="font-semibold text-slate-700">💡 Cara Kerja:</p>
+                    <p>Cakra-Ai Lite akan membaca dan mengekstrak tulisan utama dari halaman berita atau artikel online tersebut secara otomatis untuk dijadikan basis pengetahuan asisten Anda.</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="saveWebLinkSource()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-2">
+                        <span id="link-btn-text">Ekstrak & Tambah</span>
+                        <i id="link-btn-spinner" class="fa-solid fa-spinner animate-spin hidden"></i>
+                    </button>
+                    <button onclick="toggleAddLinkModal(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg text-xs transition-all">
+                        Kembali
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="info-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-6 relative">
             <button onclick="toggleInfoModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
@@ -532,7 +569,7 @@
         </div>
         <div id="mobile-sources-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
         <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
-            <div class="grid grid-cols-3 gap-1.5">
+            <div class="grid grid-cols-2 gap-1.5">
                 <label class="flex flex-col items-center justify-center py-2 px-1 border border-dashed border-slate-300 rounded-lg cursor-pointer bg-white hover:bg-slate-50 text-center">
                     <i class="fa-solid fa-cloud-arrow-up text-teal-600 text-sm mb-1"></i>
                     <span class="text-[9px] font-semibold text-slate-700">Unggah File</span>
@@ -545,6 +582,10 @@
                 <button onclick="toggleMobileSidebar(); openRecordVoiceModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-center">
                     <i class="fa-solid fa-microphone-lines text-rose-600 text-sm mb-1"></i>
                     <span class="text-[9px] font-semibold text-slate-700">Rekam Suara</span>
+                </button>
+                <button onclick="toggleMobileSidebar(); openAddLinkModal()" class="flex flex-col items-center justify-center py-2 px-1 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-center">
+                    <i class="fa-solid fa-globe text-amber-600 text-sm mb-1"></i>
+                    <span class="text-[9px] font-semibold text-slate-700">Tambah Link</span>
                 </button>
             </div>
             <button onclick="clearAllSources(); toggleMobileSidebar();" class="w-full py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-xs font-semibold transition-all">
@@ -1099,8 +1140,10 @@ Petunjuk Penggunaan Fitur:
             let htmlContent = '';
             state.sources.forEach(src => {
                 let icon = '<i class="fa-solid fa-file-lines text-teal-600 text-sm"></i>';
-                if (src.title.includes('(Memproses...)') || src.title.includes('[Sedang OCR...]')) {
+                if (src.title.includes('(Memproses...)') || src.title.includes('[Sedang OCR...]') || src.title.includes('(Mengekstrak...)')) {
                     icon = '<i class="fa-solid fa-spinner animate-spin text-teal-500 text-sm"></i>';
+                } else if (src.type === 'web') {
+                    icon = '<i class="fa-solid fa-globe text-amber-600 text-sm"></i>';
                 } else if (src.type === 'pdf') {
                     icon = '<i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>';
                 } else if (src.type === 'excel') {
@@ -1154,7 +1197,18 @@ Petunjuk Penggunaan Fitur:
             let typeBadge = '';
             let contentHtml = '';
 
-            if (src.type === 'pdf') {
+            if (src.type === 'web') {
+                typeBadge = '<span class="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full border border-amber-100">Website</span>';
+                contentHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
+                        <span>Tipe berkas: <strong>Artikel Website / Berita Online</strong></span>
+                        <span>Ukuran teks: <strong>${src.content.length} karakter</strong></span>
+                    </div>
+                    <div class="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-700 bg-slate-50 p-4 border border-slate-200 rounded-xl max-h-96 overflow-y-auto leading-relaxed select-text">${escapeHtml(src.content)}</div>
+                `;
+                copyBtn.style.display = 'flex';
+                copyBtn.onclick = () => copyTextToClipboardDirect(src.content);
+            } else if (src.type === 'pdf') {
                 typeBadge = '<span class="px-2 py-0.5 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-full border border-rose-100">PDF</span>';
                 contentHtml = `
                     <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-500 mb-2">
@@ -1231,6 +1285,84 @@ Petunjuk Penggunaan Fitur:
             document.execCommand('copy');
             document.body.removeChild(el);
             showToast("Isi dokumen sumber berhasil disalin ke clipboard!", "success");
+        }
+
+        function openAddLinkModal() {
+            toggleAddLinkModal(true);
+        }
+
+        function toggleAddLinkModal(show) {
+            const modal = document.getElementById('add-link-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                document.getElementById('new-link-url').value = '';
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        async function saveWebLinkSource() {
+            const urlInput = document.getElementById('new-link-url').value.trim();
+            if (!urlInput) {
+                showToast("Silakan masukkan alamat URL terlebih dahulu!", "error");
+                return;
+            }
+
+            try {
+                new URL(urlInput);
+            } catch (_) {
+                showToast("Format URL tidak valid! Pastikan diawali https:// atau http://", "error");
+                return;
+            }
+
+            const btnText = document.getElementById('link-btn-text');
+            const btnSpinner = document.getElementById('link-btn-spinner');
+
+            btnText.textContent = "Sedang Mengekstrak...";
+            btnSpinner.classList.remove('hidden');
+
+            const sourceId = 'src-' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const parsedUrl = new URL(urlInput);
+            const domain = parsedUrl.hostname;
+            
+            const placeholderSource = {
+                id: sourceId,
+                title: domain + ' (Mengekstrak...)',
+                type: 'web',
+                content: 'Sedang mengekstrak isi teks dari halaman website...'
+            };
+            
+            state.sources.push(placeholderSource);
+            updateSourcesUI();
+            toggleAddLinkModal(false);
+
+            try {
+                const fetchUrl = `https://r.jina.ai/${urlInput}`;
+                const response = await fetch(fetchUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                const textData = await response.text();
+
+                let extractedTitle = domain;
+                const titleMatch = textData.match(/^Title:\s*(.*)$/m);
+                if (titleMatch && titleMatch[1]) {
+                    extractedTitle = titleMatch[1].trim();
+                } else {
+                    extractedTitle = "Artikel " + domain;
+                }
+
+                updateSourceContent(sourceId, extractedTitle, textData);
+                showToast(`Sumber website "${extractedTitle}" berhasil ditambahkan!`, "success");
+
+            } catch (err) {
+                console.error("Gagal mengekstrak website:", err);
+                showToast(`Gagal membaca website. Jaringan diblokir atau URL tidak dapat diakses.`, "error");
+                updateSourceContent(sourceId, domain + ' [Gagal Memuat]', `[⚠️ Gagal mengekstrak website: ${urlInput}.\nDetail Galat: ${err.message || err}\n\nPastikan website tersebut dapat diakses secara publik, atau Anda dapat menyalin isi artikelnya secara manual menggunakan fitur "Tulis Teks".]`);
+            } finally {
+                btnText.textContent = "Ekstrak & Tambah";
+                btnSpinner.classList.add('hidden');
+            }
         }
 
         function initSpeechRecognition() {
